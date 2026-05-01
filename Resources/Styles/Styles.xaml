@@ -192,7 +192,7 @@
         <Setter Property="BackgroundColor" Value="Transparent" />
         <Setter Property="FontFamily" Value="OpenSansRegular"/>
         <Setter Property="FontSize" Value="14" />
-        <Setter Property="MinimumHeightRequest" Value="44"/>
+        <Setter Property="MinimumHeightRequest" Value="60"/>
         <Setter Property="MinimumWidthRequest" Value="44"/>
         <Setter Property="VisualStateManager.VisualStateGroups">
             <VisualStateGroupList>
@@ -471,8 +471,8 @@
 
     <!-- ── Coefficient Entry ─────────────────────────────────── -->
     <Style x:Key="CoeffEntry" TargetType="Entry">
-        <Setter Property="WidthRequest" Value="58" />
-        <Setter Property="HeightRequest" Value="40" />
+        <!--<Setter Property="WidthRequest" Value="58" />
+        <Setter Property="HeightRequest" Value="40" />-->
         <Setter Property="HorizontalTextAlignment" Value="Center" />
         <Setter Property="FontSize" Value="14" />
         <Setter Property="Keyboard" Value="Numeric" />

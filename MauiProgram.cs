@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
+using SimplexMethodApp.ViewModels;
 
 namespace SimplexMethodApp
 {
@@ -18,6 +19,9 @@ namespace SimplexMethodApp
 #if DEBUG
     		builder.Logging.AddDebug();
 #endif
+
+            builder.Services.AddTransient<MainViewModel>();
+            builder.Services.AddTransient<MainPage>();
 
             return builder.Build();
         }

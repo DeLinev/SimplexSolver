@@ -1,7 +1,10 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             x:Class="SimplexMethodApp.MainPage">
+             xmlns:viewmodel="clr-namespace:SimplexMethodApp.ViewModels"
+             x:DataType="viewmodel:MainViewModel"
+             x:Class="SimplexMethodApp.MainPage"
+             Title="Simplex Method App">
 
     <ScrollView BackgroundColor="{AppThemeBinding Light={StaticResource BackgroundLight},
                                                    Dark={StaticResource BackgroundDark}}">
@@ -26,7 +29,7 @@
                  CARD 1 — ПАРАМЕТРИ ЗАДАЧІ
                  ───────────────────────────────────────────────────────── -->
             <Border Style="{StaticResource Card}">
-                <VerticalStackLayout Spacing="14">
+                <VerticalStackLayout Spacing="7">
 
                     <Label Text="⚙  Параметри задачі"
                            Style="{StaticResource SectionTitle}" />
@@ -50,15 +53,15 @@
                                     Stroke="{StaticResource Primary}"
                                     StrokeThickness="1.5"
                                     StrokeShape="RoundRectangle 8"
-                                    Padding="2,0"
+                                    MinimumWidthRequest="100"
                                     IsVisible="{Binding IsCustomVariableCount}">
                                 <Entry Text="{Binding CustomVariableCount}"
                                        Placeholder="N > 20"
                                        Keyboard="Numeric"
-                                       WidthRequest="90"
-                                       HeightRequest="40"
                                        HorizontalTextAlignment="Center"
-                                       FontSize="14"
+                                       VerticalTextAlignment="Center"
+                                       HorizontalOptions="Fill" 
+                                       VerticalOptions="Fill"
                                        TextColor="{AppThemeBinding
                                            Light={StaticResource TextPrimary},
                                            Dark={StaticResource TextPrimaryDark}}"
@@ -88,15 +91,15 @@
                                     Stroke="{StaticResource Primary}"
                                     StrokeThickness="1.5"
                                     StrokeShape="RoundRectangle 8"
-                                    Padding="2,0"
+                                    MinimumWidthRequest="100"
                                     IsVisible="{Binding IsCustomConstraintCount}">
                                 <Entry Text="{Binding CustomConstraintCount}"
                                        Placeholder="M > 20"
                                        Keyboard="Numeric"
-                                       WidthRequest="90"
-                                       HeightRequest="40"
                                        HorizontalTextAlignment="Center"
-                                       FontSize="14"
+                                       VerticalTextAlignment="Center"
+                                       HorizontalOptions="Fill" 
+                                       VerticalOptions="Fill"
                                        TextColor="{AppThemeBinding
                                            Light={StaticResource TextPrimary},
                                            Dark={StaticResource TextPrimaryDark}}"
@@ -105,16 +108,6 @@
 
                         </Grid>
                     </VerticalStackLayout>
-
-                    <!-- ── Кнопка "Завантажити приклад" ── -->
-                    <Button Text="💡 Завантажити приклад"
-                            Command="{Binding LoadExampleCommand}"
-                            BackgroundColor="Transparent"
-                            TextColor="{StaticResource Primary}"
-                            FontSize="13"
-                            Padding="0"
-                            HorizontalOptions="End"
-                            HeightRequest="34" />
 
                 </VerticalStackLayout>
             </Border>
@@ -128,18 +121,17 @@
                     <Label Text="🎯  Цільова функція"
                            Style="{StaticResource SectionTitle}" />
 
-                    <!--
-                        Рядок вигляду:
+                    
+                        <!--Рядок вигляду:
                         F(x) = [c1]x₁ + [c2]x₂ + [c3]x₃ + ... → [max▼]
 
                         ScrollView горизонтальний, щоб не обрізало при багатьох змінних.
-                        FlexLayout містить BindableLayout з динамічними термами.
-                    -->
-                    <ScrollView Orientation="Horizontal" HorizontalScrollBarVisibility="Never">
-                        <FlexLayout Direction="Row" Wrap="NoWrap" AlignItems="Center"
-                                    Margin="0,4">
+                        FlexLayout містить BindableLayout з динамічними термами.-->
+                    
+                    <ScrollView Orientation="Horizontal">
+                        <HorizontalStackLayout Spacing="0" VerticalOptions="Center" Margin="0,4">
 
-                            <!-- "F(x) =" -->
+                             <!--"F(x) ="--> 
                             <Label Text="F(x) ="
                                    FontSize="15"
                                    FontAttributes="Bold"
@@ -147,49 +139,50 @@
                                    VerticalOptions="Center"
                                    Margin="0,0,6,0" />
 
-                            <!-- Динамічні члени: [cᵢ] xᵢ + -->
-                            <FlexLayout Direction="Row"
-                                        Wrap="NoWrap"
-                                        AlignItems="Center"
-                                        BindableLayout.ItemsSource="{Binding ObjectiveCoefficients}">
+                             <!--Динамічні члени: [cᵢ] xᵢ +-->
+                            <HorizontalStackLayout Spacing="0"
+                                                   VerticalOptions="Center"
+                                                   BindableLayout.ItemsSource="{Binding ObjectiveCoefficients}">
                                 <BindableLayout.ItemTemplate>
-                                    <DataTemplate>
-                                        <!--
-                                            ObjTermViewModel:
+                                    <DataTemplate x:DataType="viewmodel:ObjTermViewModel">
+                                        
+                                            <!--ObjTermViewModel:
                                                 Value         : string  ← Entry
                                                 VariableLabel : string  → "x₁", "x₂", ...
-                                                Separator     : string  → " + " або ""
-                                        -->
-                                        <FlexLayout Direction="Row"
-                                                    AlignItems="Center"
-                                                    Margin="0,0,2,0">
+                                                Separator     : string  → " + " або ""-->
 
-                                            <!-- Коефіцієнт cᵢ -->
+                                        <HorizontalStackLayout Spacing="0"
+                                                               VerticalOptions="Center"
+                                                               Margin="0,0,2,0">
+
+                                            <!--Коефіцієнт cᵢ--> 
                                             <Border Stroke="{StaticResource BorderLight}"
                                                     StrokeThickness="1"
                                                     StrokeShape="RoundRectangle 6"
-                                                    Padding="2,0">
+                                                    MinimumWidthRequest="20">
                                                 <Entry Style="{StaticResource CoeffEntry}"
                                                        Text="{Binding Value}"
+                                                       HorizontalTextAlignment="Center"
+                                                       VerticalTextAlignment="Center"
                                                        Placeholder="0" />
                                             </Border>
 
-                                            <!-- xᵢ -->
+                                             <!--xᵢ--> 
                                             <Label Text="{Binding VariableLabel}"
                                                    Style="{StaticResource BodyText}"
                                                    FontAttributes="Italic"
                                                    Margin="3,0,0,0" />
 
-                                            <!-- " + " або пусто (між термами) -->
+                                             <!--" + " або пусто (між термами)--> 
                                             <Label Text="{Binding Separator}"
                                                    Style="{StaticResource BodyText}"
                                                    Margin="3,0" />
-                                        </FlexLayout>
+                                        </HorizontalStackLayout>
                                     </DataTemplate>
                                 </BindableLayout.ItemTemplate>
-                            </FlexLayout>
+                            </HorizontalStackLayout>
 
-                            <!-- "→" -->
+                             <!--"→"--> 
                             <Label Text=" →"
                                    FontSize="16"
                                    FontAttributes="Bold"
@@ -197,20 +190,19 @@
                                    TextColor="{StaticResource TextSecondary}"
                                    Margin="4,0" />
 
-                            <!-- max / min Picker -->
+                             <!--max / min Picker--> 
                             <Border Stroke="{StaticResource Primary}"
                                     StrokeThickness="2"
-                                    StrokeShape="RoundRectangle 8"
-                                    Padding="2,0">
+                                    StrokeShape="RoundRectangle 8">
                                 <Picker Style="{StaticResource CompactPicker}"
                                         ItemsSource="{Binding OptimizationOptions}"
-                                        SelectedItem="{Binding SelectedOptimization}"
+                                        SelectedItem="{Binding SelectedOptimizationOption}"
                                         WidthRequest="85"
                                         FontAttributes="Bold"
                                         TextColor="{StaticResource Primary}" />
                             </Border>
 
-                        </FlexLayout>
+                        </HorizontalStackLayout>
                     </ScrollView>
 
                 </VerticalStackLayout>
@@ -219,7 +211,7 @@
             <!-- ─────────────────────────────────────────────────────────
                  CARD 3 — СИСТЕМА ОБМЕЖЕНЬ
                  ───────────────────────────────────────────────────────── -->
-            <Border Style="{StaticResource Card}">
+            <!--<Border Style="{StaticResource Card}">
                 <VerticalStackLayout Spacing="10">
 
                     <Grid ColumnDefinitions="*,Auto">
@@ -227,7 +219,7 @@
                                Text="📋  Система обмежень"
                                Style="{StaticResource SectionTitle}"
                                Margin="0" />
-                        <!-- Підказка про умову невід'ємності -->
+                        --><!-- Підказка про умову невід'ємності --><!--
                         <Label Grid.Column="1"
                                Text="xᵢ ≥ 0"
                                FontSize="13"
@@ -236,13 +228,13 @@
                                VerticalOptions="Center" />
                     </Grid>
 
-                    <!--
+                    --><!--
                         Кожен рядок обмежень:
                         { [a₁]x₁ + [a₂]x₂ + ... [≤▼] [b] }
-                    -->
+                    --><!--
                     <Grid ColumnDefinitions="Auto,*" ColumnSpacing="4">
 
-                        <!-- Велика фігурна дужка зліва -->
+                        --><!-- Велика фігурна дужка зліва --><!--
                         <Label Grid.Column="0"
                                Text="{}{"
                                FontSize="56"
@@ -251,38 +243,38 @@
                                VerticalOptions="Center"
                                Margin="0,0,4,0" />
 
-                        <!-- Список обмежень (BindableLayout на VerticalStackLayout) -->
+                        --><!-- Список обмежень (BindableLayout на VerticalStackLayout) --><!--
                         <VerticalStackLayout Grid.Column="1"
                                              Spacing="10"
                                              BindableLayout.ItemsSource="{Binding Constraints}">
                             <BindableLayout.ItemTemplate>
                                 <DataTemplate>
-                                    <!--
+                                    --><!--
                                         ConstraintRowViewModel:
                                             Coefficients : ObservableCollection<ConstraintCoeffViewModel>
                                             SignOptions   : List<string> { "≤", "=", "≥" }
                                             SelectedSign  : string
                                             RhsValue      : string
-                                    -->
+                                    --><!--
                                     <ScrollView Orientation="Horizontal"
                                                 HorizontalScrollBarVisibility="Never">
                                         <FlexLayout Direction="Row"
                                                     Wrap="NoWrap"
                                                     AlignItems="Center">
 
-                                            <!-- Коефіцієнти aᵢⱼ xⱼ + -->
+                                            --><!-- Коефіцієнти aᵢⱼ xⱼ + --><!--
                                             <FlexLayout Direction="Row"
                                                         Wrap="NoWrap"
                                                         AlignItems="Center"
                                                         BindableLayout.ItemsSource="{Binding Coefficients}">
                                                 <BindableLayout.ItemTemplate>
                                                     <DataTemplate>
-                                                        <!--
+                                                        --><!--
                                                             ConstraintCoeffViewModel:
                                                                 Value         : string
                                                                 VariableLabel : string
                                                                 Separator     : string
-                                                        -->
+                                                        --><!--
                                                         <FlexLayout Direction="Row"
                                                                     AlignItems="Center"
                                                                     Margin="0,0,2,0">
@@ -309,7 +301,7 @@
                                                 </BindableLayout.ItemTemplate>
                                             </FlexLayout>
 
-                                            <!-- Знак обмеження: ≤ / = / ≥ -->
+                                            --><!-- Знак обмеження: ≤ / = / ≥ --><!--
                                             <Border Stroke="{StaticResource Primary}"
                                                     StrokeThickness="1.5"
                                                     StrokeShape="RoundRectangle 8"
@@ -323,7 +315,7 @@
                                                         FontAttributes="Bold" />
                                             </Border>
 
-                                            <!-- Права частина bᵢ -->
+                                            --><!-- Права частина bᵢ --><!--
                                             <Border Stroke="{StaticResource BorderLight}"
                                                     StrokeThickness="1"
                                                     StrokeShape="RoundRectangle 6"
@@ -345,9 +337,9 @@
                 </VerticalStackLayout>
             </Border>
 
-            <!-- ─────────────────────────────────────────────────────────
+            --><!-- ─────────────────────────────────────────────────────────
                  КНОПКИ ДІЇ
-                 ───────────────────────────────────────────────────────── -->
+                 ───────────────────────────────────────────────────────── --><!--
             <Grid ColumnDefinitions="*,*,*" ColumnSpacing="10" Margin="0,0,0,14">
 
                 <Button Grid.Column="0"
@@ -367,9 +359,9 @@
 
             </Grid>
 
-            <!-- ─────────────────────────────────────────────────────────
+            --><!-- ─────────────────────────────────────────────────────────
                  CARD 4 — РОЗВ'ЯЗАННЯ (показується після натискання "Розв'язати")
-                 ───────────────────────────────────────────────────────── -->
+                 ───────────────────────────────────────────────────────── --><!--
             <Border Style="{StaticResource Card}"
                     IsVisible="{Binding HasSolution}">
                 <VerticalStackLayout Spacing="14">
@@ -377,7 +369,7 @@
                     <Label Text="📊  Розв'язання"
                            Style="{StaticResource SectionTitle}" />
 
-                    <!-- ── Повідомлення про помилку ── -->
+                    --><!-- ── Повідомлення про помилку ── --><!--
                     <Border BackgroundColor="#FEF2F2"
                             Stroke="#FCA5A5"
                             StrokeThickness="1"
@@ -396,12 +388,12 @@
                         </HorizontalStackLayout>
                     </Border>
 
-                    <!-- ── Кроки симплекс-методу ── -->
+                    --><!-- ── Кроки симплекс-методу ── --><!--
                     <VerticalStackLayout Spacing="12"
                                          BindableLayout.ItemsSource="{Binding SolutionSteps}">
                         <BindableLayout.ItemTemplate>
                             <DataTemplate>
-                                <!--
+                                --><!--
                                     SolutionStepViewModel:
                                         Title       : string  → "Початковий крок" / "Ітерація 1"
                                         Description : string  → пояснення дій на цьому кроці
@@ -419,7 +411,7 @@
                                                         IsLeaving    : bool  → рядок, що виходить
                                                 Q          : string
                                                 IsEstimate : bool  → останній рядок (оцінки)
-                                -->
+                                --><!--
                                 <Border BackgroundColor="{AppThemeBinding
                                             Light=#F8FAFC, Dark=#162030}"
                                         Stroke="{AppThemeBinding
@@ -430,13 +422,13 @@
                                         Padding="14">
                                     <VerticalStackLayout Spacing="8">
 
-                                        <!-- Заголовок кроку -->
+                                        --><!-- Заголовок кроку --><!--
                                         <Label Text="{Binding Title}"
                                                FontAttributes="Bold"
                                                FontSize="14"
                                                TextColor="{StaticResource Primary}" />
 
-                                        <!-- Опис / пояснення -->
+                                        --><!-- Опис / пояснення --><!--
                                         <Label Text="{Binding Description}"
                                                FontSize="12"
                                                LineBreakMode="WordWrap"
@@ -445,22 +437,22 @@
                                                    Dark={StaticResource TextSecondaryDark}}"
                                                IsVisible="{Binding HasDescription}" />
 
-                                        <!-- ─── Симплекс-таблиця ─── -->
+                                        --><!-- ─── Симплекс-таблиця ─── -->
                                         <!--
                                             ПРИМІТКА: Таблиця будується у code-behind або через
                                             ContentView/CustomView, бо кількість стовпців динамічна.
                                             Тут залишено ScrollView як контейнер-плейсхолдер.
                                             Рекомендована реалізація: Grid програмно або DataGrid
                                             від CommunityToolkit.
-                                        -->
+                                        --><!--
                                         <ScrollView Orientation="Horizontal"
                                                     HorizontalScrollBarVisibility="Always"
                                                     IsVisible="{Binding HasTable}">
-                                            <!--
+                                            --><!--
                                                 Вставити сюди кастомний SimplexTableView:
                                                 <views:SimplexTableView
                                                     Rows="{Binding TableRows}" />
-                                            -->
+                                            --><!--
                                             <ContentView x:Name="TablePlaceholder"
                                                          BindingContext="{Binding}"
                                                          MinimumWidthRequest="300" />
@@ -472,7 +464,7 @@
                         </BindableLayout.ItemTemplate>
                     </VerticalStackLayout>
 
-                    <!-- ── Оптимальний розв'язок (фінальний блок) ── -->
+                    --><!-- ── Оптимальний розв'язок (фінальний блок) ── --><!--
                     <Border BackgroundColor="{AppThemeBinding
                                 Light=#EFF6FF, Dark=#0D2744}"
                             Stroke="{StaticResource Primary}"
@@ -495,7 +487,7 @@
 
                             <BoxView Style="{StaticResource Divider}" Margin="0,0" />
 
-                            <!-- F* = ... -->
+                            --><!-- F* = ... --><!--
                             <Label Text="{Binding OptimalValueText}"
                                    FontSize="18"
                                    FontAttributes="Bold"
@@ -503,7 +495,7 @@
                                        Light={StaticResource TextPrimary},
                                        Dark={StaticResource TextPrimaryDark}}" />
 
-                            <!-- x₁ = ...,  x₂ = ..., ... -->
+                            --><!-- x₁ = ...,  x₂ = ..., ... --><!--
                             <Label Text="{Binding OptimalVariablesText}"
                                    FontSize="14"
                                    TextColor="{AppThemeBinding
@@ -513,7 +505,7 @@
                         </VerticalStackLayout>
                     </Border>
 
-                    <!-- ── Кнопка копіювання результату ── -->
+                    --><!-- ── Кнопка копіювання результату ── --><!--
                     <Button Text="📋 Копіювати результат"
                             Command="{Binding CopyResultCommand}"
                             BackgroundColor="Transparent"
@@ -524,7 +516,7 @@
                             IsVisible="{Binding HasOptimalSolution}" />
 
                 </VerticalStackLayout>
-            </Border>
+            </Border>-->
 
         </VerticalStackLayout>
     </ScrollView>

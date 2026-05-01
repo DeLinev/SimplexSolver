@@ -1,10 +1,13 @@
-﻿namespace SimplexMethodApp
+﻿using SimplexMethodApp.ViewModels;
+
+namespace SimplexMethodApp
 {
     public partial class MainPage : ContentPage
     {
-        public MainPage()
+        public MainPage(MainViewModel viewModel)
         {
             InitializeComponent();
+            BindingContext = viewModel;
         }
     }
 }

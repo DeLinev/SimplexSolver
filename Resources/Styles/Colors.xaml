@@ -30,7 +30,7 @@
     <Color x:Key="BorderLight">#E5E7EB</Color>
     <Color x:Key="BorderDark">#2D3E50</Color>
 
-    <Color x:Key="InputBgLight">#F9FAFB</Color>
+    <Color x:Key="InputBgLight">#f0f1f2</Color>
     <Color x:Key="InputBgDark">#0F2132</Color>
 
     <Color x:Key="White">White</Color>
