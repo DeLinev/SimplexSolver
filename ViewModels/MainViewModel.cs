@@ -1,4 +1,6 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
+using Microsoft.Maui.Controls.PlatformConfiguration;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -36,6 +38,43 @@ namespace SimplexMethodApp.ViewModels
         public partial string CustomConstraintCount { get; set; }
 
         public ObservableCollection<ObjTermViewModel> ObjectiveCoefficients { get; } = new();
+        public ObservableCollection<ConstraintRowViewModel> Constraints { get; } = new();
+
+        [RelayCommand]
+        private async Task Clear()
+        {
+            InitializeDefaults();
+        }
+
+        [RelayCommand(CanExecute = nameof(CanSolve), IncludeCancelCommand = true)]
+        private async Task SolveAsync(CancellationToken token)
+        {
+            try
+            {
+                IsBusy = true;
+                //ErrorMessage = null;
+                //SolutionSteps.Clear();
+
+                //var result = await Task.Run(() => _solver.Solve(/* параметри */), token);
+                // заповнення SolutionSteps, OptimalValueText тощо
+                await Task.Delay(3000, token);
+
+            }
+            catch (OperationCanceledException)
+            {
+                //ErrorMessage = "Обчислення скасовано";
+            }
+            catch (Exception ex)
+            {
+                //ErrorMessage = ex.Message;
+            }
+            finally
+            {
+                IsBusy = false;
+            }
+        }
+
+        private bool CanSolve() => !IsBusy;
 
         private void InitializeDefaults()
         {
@@ -55,6 +94,7 @@ namespace SimplexMethodApp.ViewModels
             SelectedOptimizationOption = OptimizationOptions[0];
 
             RebuildObjectiveCoefficients();
+            RebuildConstraints();
         }
 
         private void RebuildObjectiveCoefficients()
@@ -73,6 +113,29 @@ namespace SimplexMethodApp.ViewModels
             }
         }
 
+        private void RebuildConstraints()
+        {
+            Constraints.Clear();
+            int variableCount = GetVariableCount();
+            int constraintCount = GetConstraintCount();
+            for (int i = 0; i < constraintCount; i++)
+            {
+                var row = new ConstraintRowViewModel
+                {
+                    Coefficients = new ObservableCollection<ConstraintCoeffViewModel>(),
+                };
+                for (int j = 0; j < variableCount; j++)
+                {
+                    row.Coefficients.Add(new ConstraintCoeffViewModel
+                    {
+                        VariableLabel = $"x{ToSubscript(j + 1)}",
+                        Separator = j < variableCount - 1 ? " + " : ""
+                    });
+                }
+                Constraints.Add(row);
+            }
+        }
+
         private int GetVariableCount()
         {
             if (SelectedVariableOption == "Інше...")
@@ -88,6 +151,19 @@ namespace SimplexMethodApp.ViewModels
             return 2;
         }
 
+        private int GetConstraintCount()
+        {
+            if (SelectedConstraintOption == "Інше...")
+            {
+                if (int.TryParse(CustomConstraintCount, out int custom) && custom >= 2)
+                    return custom;
+                return 2;
+            }
+            if (int.TryParse(SelectedConstraintOption, out int selected))
+                return selected;
+            return 2;
+        }
+
         private static string ToSubscript(int n)
         {
             var subscripts = new[] { '₀', '₁', '₂', '₃', '₄', '₅', '₆', '₇', '₈', '₉' };
@@ -97,12 +173,27 @@ namespace SimplexMethodApp.ViewModels
         partial void OnSelectedVariableOptionChanged(string value)
         {
             RebuildObjectiveCoefficients();
+            RebuildConstraints();
         }
 
         partial void OnCustomVariableCountChanged(string value)
         {
             if (IsCustomVariableCount)
+            {
                 RebuildObjectiveCoefficients();
+                RebuildConstraints();
+            }
+        }
+
+        partial void OnSelectedConstraintOptionChanged(string value)
+        {
+            RebuildConstraints();
+        }
+
+        partial void OnCustomConstraintCountChanged(string value)
+        {
+            if (IsCustomConstraintCount)
+                RebuildConstraints();
         }
     }
 }
