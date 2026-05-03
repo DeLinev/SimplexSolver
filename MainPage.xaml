@@ -34,7 +34,7 @@
             </VerticalStackLayout>
 
             <!-- ─────────────────────────────────────────────────────────
-                 CARD 1 — ПАРАМЕТРИ ЗАДАЧІ
+                 CARD 1 — PROBLEM PARAMETERS
                  ───────────────────────────────────────────────────────── -->
             <Border Style="{StaticResource Card}" IsEnabled="{Binding IsNotBusy}">
                 <VerticalStackLayout Spacing="7">
@@ -42,7 +42,7 @@
                     <Label Text="⚙  Параметри задачі"
                            Style="{StaticResource SectionTitle}" />
 
-                    <!-- ── Кількість змінних ── -->
+                    <!-- ── Number of variables ── -->
                     <VerticalStackLayout Spacing="6">
                         <Label Text="Кількість змінних"
                                FontSize="13"
@@ -56,7 +56,6 @@
                                     SelectedItem="{Binding SelectedVariableOption}"
                                     Title="Оберіть кількість..." />
 
-                            <!-- Поле для свого значення (IsVisible прив'язано) -->
                             <Border Grid.Column="1"
                                     Stroke="{StaticResource Primary}"
                                     StrokeThickness="1.5"
@@ -81,7 +80,7 @@
 
                     <BoxView Style="{StaticResource Divider}" />
 
-                    <!-- ── Кількість обмежень ── -->
+                    <!-- ── Number of constraints ── -->
                     <VerticalStackLayout Spacing="6">
                         <Label Text="Кількість обмежень"
                                FontSize="13"
@@ -121,7 +120,7 @@
             </Border>
 
             <!-- ─────────────────────────────────────────────────────────
-                 CARD 2 — ЦІЛЬОВА ФУНКЦІЯ
+                 CARD 2 — OBJECTIVE FUNCTION
                  ───────────────────────────────────────────────────────── -->
             <Border Style="{StaticResource Card}" IsEnabled="{Binding IsNotBusy}">
                 <VerticalStackLayout Spacing="10">
@@ -129,17 +128,10 @@
                     <Label Text="🎯  Цільова функція"
                            Style="{StaticResource SectionTitle}" />
 
-                    
-                        <!--Рядок вигляду:
-                        F(x) = [c1]x₁ + [c2]x₂ + [c3]x₃ + ... → [max▼]
-
-                        ScrollView горизонтальний, щоб не обрізало при багатьох змінних.
-                        FlexLayout містить BindableLayout з динамічними термами.-->
-                    
                     <ScrollView Orientation="Horizontal">
                         <HorizontalStackLayout Spacing="0" VerticalOptions="Center" Margin="0,4">
 
-                             <!--"F(x) ="--> 
+                            <!--"F(x) ="-->
                             <Label Text="F(x) ="
                                    FontSize="15"
                                    FontAttributes="Bold"
@@ -147,52 +139,38 @@
                                    VerticalOptions="Center"
                                    Margin="0,0,6,0" />
 
-                             <!--Динамічні члени: [cᵢ] xᵢ +-->
-                            <CollectionView VerticalOptions="Center"
-                                            ItemsSource="{Binding ObjectiveCoefficients}">
-                                <CollectionView.ItemsLayout>
-                                    <LinearItemsLayout Orientation="Horizontal" />
-                                </CollectionView.ItemsLayout>
-                                <CollectionView.ItemTemplate>
+                            <!--[cᵢ] xᵢ +-->
+                            <HorizontalStackLayout VerticalOptions="Center"
+                                            BindableLayout.ItemsSource="{Binding ObjectiveCoefficients}">
+
+                                <BindableLayout.ItemTemplate>
                                     <DataTemplate x:DataType="viewmodel:ObjTermViewModel">
                                         
-                                            <!--ObjTermViewModel:
-                                                Value         : string  ← Entry
-                                                VariableLabel : string  → "x₁", "x₂", ...
-                                                Separator     : string  → " + " або ""-->
+                                        <!--ObjTermViewModel:
+                                            Value         : string  ← Entry
+                                            VariableLabel : string  → "x₁", "x₂", ...
+                                            Separator     : string  → " + " or ""-->
 
                                         <HorizontalStackLayout Spacing="0"
-                                                               VerticalOptions="Center"
-                                                               Margin="0,0,2,0">
-
-                                            <!--Коефіцієнт cᵢ--> 
-                                            <Border Stroke="{StaticResource BorderLight}"
-                                                    StrokeThickness="1"
-                                                    StrokeShape="RoundRectangle 6"
-                                                    MinimumWidthRequest="20">
-                                                <controls:NumericEntry Style="{StaticResource CoeffEntry}"
+                                                               VerticalOptions="Center" >
+                                            
+                                            <controls:NumericEntry Style="{StaticResource CoeffEntry}"
                                                        Text="{Binding Value}"
                                                        HorizontalTextAlignment="Center"
                                                        VerticalTextAlignment="Center"
                                                        Placeholder="0" />
-                                            </Border>
 
-                                             <!--xᵢ--> 
-                                            <Label Text="{Binding VariableLabel}"
+                                            <Label Text="{Binding DisplayLabel}"
                                                    Style="{StaticResource BodyText}"
                                                    FontAttributes="Italic"
                                                    Margin="3,0,0,0" />
 
-                                             <!--" + " або пусто (між термами)--> 
-                                            <Label Text="{Binding Separator}"
-                                                   Style="{StaticResource BodyText}"
-                                                   Margin="3,0" />
                                         </HorizontalStackLayout>
                                     </DataTemplate>
-                                </CollectionView.ItemTemplate>
-                            </CollectionView>
+                                </BindableLayout.ItemTemplate>
+                            </HorizontalStackLayout>
 
-                             <!--"→"--> 
+                            <!--"→"-->
                             <Label Text=" →"
                                    FontSize="16"
                                    FontAttributes="Bold"
@@ -200,7 +178,7 @@
                                    TextColor="{StaticResource TextSecondary}"
                                    Margin="4,0" />
 
-                             <!--max / min Picker--> 
+                            <!--max / min Picker-->
                             <Border Stroke="{StaticResource Primary}"
                                     StrokeThickness="2"
                                     StrokeShape="RoundRectangle 8">
@@ -220,7 +198,7 @@
             </Border>
 
             <!-- ─────────────────────────────────────────────────────────
-                 CARD 3 — СИСТЕМА ОБМЕЖЕНЬ
+                 CARD 3 — SYSTEM OF CONSTRAINTS
                  ───────────────────────────────────────────────────────── -->
             <Border Style="{StaticResource Card}" IsEnabled="{Binding IsNotBusy}">
                 <VerticalStackLayout Spacing="10">
@@ -230,19 +208,15 @@
                                Text="📋  Система обмежень"
                                Style="{StaticResource SectionTitle}"
                                Margin="0" />
-                        <!-- Підказка про умову невід'ємності -->
+                        
                         <Label Grid.Column="1"
                                Text="xᵢ ≥ 0"
                                FontSize="13"
                                FontAttributes="Italic"
                                TextColor="{StaticResource TextSecondary}"
-                               VerticalOptions="Center" />
+                               VerticalOptions="Center" />      
                     </Grid>
 
-                    <!--
-                        Constraint Rows:
-                        { [a₁]x₁ + [a₂]x₂ + ... [≤▼] [b] }
-                    -->
                     <Grid ColumnDefinitions="Auto,*" ColumnSpacing="4">
 
                         <Label Grid.Column="0"
@@ -253,95 +227,70 @@
                                VerticalOptions="Center"
                                Margin="0,0,4,0" />
 
-                        <ScrollView Grid.Column="1" Orientation="Horizontal">
+                        <ScrollView Grid.Column="1" 
+                                    Orientation="Both" 
+                                    MaximumHeightRequest="300"> 
 
-                            <CollectionView Grid.Column="1"
-                                        ItemsSource="{Binding Constraints}"
-                                        MaximumHeightRequest="300">
-                                <CollectionView.ItemsLayout>
-                                    <LinearItemsLayout Orientation="Vertical" ItemSpacing="12" />
-                                </CollectionView.ItemsLayout>
-                                <CollectionView.ItemTemplate>
+                            <VerticalStackLayout BindableLayout.ItemsSource="{Binding Constraints}"
+                                     Spacing="12"
+                                     Padding="0,0,10,0">
+                                <BindableLayout.ItemTemplate>
                                     <DataTemplate x:DataType="viewmodel:ConstraintRowViewModel">
-                                        <!--
-                                        ConstraintRowViewModel:
-                                            Coefficients : ObservableCollection<ConstraintCoeffViewModel>
-                                            SignOptions   : List<string> { "≤", "=", "≥" }
-                                            SelectedSign  : string
-                                            RhsValue      : string
-                                    -->
+
                                         <HorizontalStackLayout Spacing="0" VerticalOptions="Center" Margin="0,4">
 
-                                            <!-- Коефіцієнти aᵢⱼ xⱼ + -->
-                                            <CollectionView ItemsSource="{Binding Coefficients}">
-                                                <CollectionView.ItemsLayout>
-                                                    <LinearItemsLayout Orientation="Horizontal" />
-                                                </CollectionView.ItemsLayout>
-                                                <CollectionView.ItemTemplate>
+                                            <!-- Coefficients aᵢⱼ xⱼ + -->
+                                            <HorizontalStackLayout BindableLayout.ItemsSource="{Binding Coefficients}" 
+                                                       Spacing="0" 
+                                                       VerticalOptions="Center">
+                                                <BindableLayout.ItemTemplate>
                                                     <DataTemplate x:DataType="viewmodel:ConstraintCoeffViewModel">
-                                                        <!--
-                                                            ConstraintCoeffViewModel:
-                                                                Value         : string
-                                                                VariableLabel : string
-                                                                Separator     : string
-                                                        -->
-                                                        <HorizontalStackLayout Spacing="0"
-                                                                               VerticalOptions="Center"
-                                                                               Margin="0,0,2,0">
 
-                                                            <Border Stroke="{StaticResource BorderLight}"
-                                                                    StrokeThickness="1"
-                                                                    StrokeShape="RoundRectangle 6" >
-                                                                <controls:NumericEntry Style="{StaticResource CoeffEntry}"
+                                                        <Grid ColumnDefinitions="Auto, Auto" ColumnSpacing="2" Margin="0,0,4,0">
+                                                            <controls:NumericEntry Grid.Column="0"
+                                                                       Style="{StaticResource CoeffEntry}"
                                                                        Text="{Binding Value}"
                                                                        HorizontalTextAlignment="Center"
                                                                        VerticalTextAlignment="Center"
                                                                        Placeholder="0" />
-                                                            </Border>
-
-                                                            <Label Text="{Binding VariableLabel}"
+                                                            <Label Grid.Column="1"
+                                                                   Text="{Binding DisplayLabel}"
                                                                    Style="{StaticResource BodyText}"
                                                                    FontAttributes="Italic"
-                                                                   Margin="3,0,0,0" />
+                                                                   VerticalOptions="Center" />  
+                                                        </Grid>
 
-                                                            <Label Text="{Binding Separator}"
-                                                                   Style="{StaticResource BodyText}"
-                                                                   Margin="3,0" />
-                                                        </HorizontalStackLayout>
                                                     </DataTemplate>
-                                                </CollectionView.ItemTemplate>
-                                            </CollectionView>
+                                                </BindableLayout.ItemTemplate>
+                                            </HorizontalStackLayout>
 
-                                            <!-- Знак обмеження: ≤ / = / ≥ -->
+                                            <!-- Sign: ≤ / = / ≥ -->
                                             <Border Stroke="{StaticResource Primary}"
-                                                    StrokeThickness="1.5"
-                                                    StrokeShape="RoundRectangle 8"
-                                                    Margin="6,0">
+                                        StrokeThickness="1.5"
+                                        StrokeShape="RoundRectangle 8"
+                                        Margin="6,0">
                                                 <Picker Style="{StaticResource CompactPicker}"
-                                                        ItemsSource="{Binding SignOptions}"
-                                                        SelectedItem="{Binding SelectedSign}"
-                                                        WidthRequest="78"
-                                                        TextColor="{StaticResource Primary}"
-                                                        FontAttributes="Bold" />
+                                            ItemsSource="{Binding SignOptions}"
+                                            SelectedItem="{Binding SelectedSign}"
+                                            WidthRequest="78"
+                                            TextColor="{StaticResource Primary}"
+                                            FontAttributes="Bold" />
                                             </Border>
 
-                                            <!-- Права частина bᵢ -->
-                                            <Border Stroke="{StaticResource BorderLight}"
-                                                    StrokeThickness="1"
-                                                    StrokeShape="RoundRectangle 6">
+                                            <!-- Right-hand side bᵢ -->
+
                                                 <controls:NumericEntry Style="{StaticResource CoeffEntry}"
-                                                       Text="{Binding RhsValue}"
-                                                       Placeholder="b"
-                                                       HorizontalTextAlignment="Center"
-                                                       VerticalTextAlignment="Center"
-                                                       WidthRequest="68" />
-                                            </Border>
+                                                           Text="{Binding RhsValue}"
+                                                           Placeholder="b"
+                                                           HorizontalTextAlignment="Center"
+                                                           VerticalTextAlignment="Center"
+                                                           WidthRequest="68" />
 
                                         </HorizontalStackLayout>
                                     </DataTemplate>
-                                </CollectionView.ItemTemplate>
-                            </CollectionView>
-                            
+                                </BindableLayout.ItemTemplate>
+                            </VerticalStackLayout>
+
                         </ScrollView>
                     </Grid>
 
@@ -349,7 +298,7 @@
             </Border>
 
             <!-- ─────────────────────────────────────────────────────────
-                 КНОПКИ ДІЇ
+                 ACTIONS
                  ───────────────────────────────────────────────────────── -->
             <Grid ColumnDefinitions="*,*" ColumnSpacing="10" Margin="0,0,0,14">
 
@@ -409,7 +358,7 @@
             </Border>
 
             <!-- ─────────────────────────────────────────────────────────
-                 CARD 5 — РОЗВ'ЯЗАННЯ (показується після натискання "Розв'язати")
+                 CARD 5 — SOLUTION STEPS & OPTIMAL SOLUTION
                  ───────────────────────────────────────────────────────── --><!--
             <Border Style="{StaticResource Card}"
                     IsVisible="{Binding HasSolution}">

@@ -12,5 +12,6 @@ namespace SimplexMethodApp.ViewModels
         public partial string Value { get; set; } = "0";
         public string VariableLabel { get; init; }
         public string Separator { get; init; }
+        public string DisplayLabel => $"{VariableLabel} {Separator} ";
     }
 }

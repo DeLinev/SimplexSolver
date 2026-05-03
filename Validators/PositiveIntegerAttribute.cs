@@ -10,11 +10,11 @@ namespace SimplexMethodApp.Validators
         private readonly int _min;
         private readonly int _max;
 
-        public PositiveIntegerAttribute(int min = 2, int max = 1000)
+        public PositiveIntegerAttribute(int min, int max, string ErrorMsg)
         {
             _min = min;
             _max = max;
-            ErrorMessage = $"Значення має бути від {min} до {max}";
+            ErrorMessage = ErrorMsg;
         }
 
         protected override ValidationResult IsValid(object value, ValidationContext ctx)

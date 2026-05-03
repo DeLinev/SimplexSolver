@@ -39,12 +39,12 @@ namespace SimplexMethodApp.ViewModels
 
         [ObservableProperty]
         [NotifyDataErrorInfo]
-        [PositiveInteger(2, 100)]
+        [PositiveInteger(2, 20, "Значення кількості змінних має бути між 2 та 20")]
         [NotifyCanExecuteChangedFor(nameof(SolveCommand))]
         public partial string CustomVariableCount { get; set; }
         [ObservableProperty]
         [NotifyDataErrorInfo]
-        [PositiveInteger(2, 100)]
+        [PositiveInteger(2, 20, "Значення кількості умов-обмежень має бути між 2 та 20")]
         [NotifyCanExecuteChangedFor(nameof(SolveCommand))]
         public partial string CustomConstraintCount { get; set; }
 
@@ -72,7 +72,7 @@ namespace SimplexMethodApp.ViewModels
 
                 //var result = await Task.Run(() => _solver.Solve(/* параметри */), token);
                 // заповнення SolutionSteps, OptimalValueText тощо
-                await Task.Delay(3000, token);
+                await Task.Delay(10000, token);
 
             }
             catch (OperationCanceledException)
@@ -178,7 +178,7 @@ namespace SimplexMethodApp.ViewModels
         {
             if (SelectedVariableOption == "Інше...")
             {
-                if (int.TryParse(CustomVariableCount, out int custom) && custom >= 2)
+                if (int.TryParse(CustomVariableCount, out int custom) && custom >= 2 && custom <= 20)
                     return custom;
                 return 2;
             }
@@ -193,7 +193,7 @@ namespace SimplexMethodApp.ViewModels
         {
             if (SelectedConstraintOption == "Інше...")
             {
-                if (int.TryParse(CustomConstraintCount, out int custom) && custom >= 2)
+                if (int.TryParse(CustomConstraintCount, out int custom) && custom >= 2 && custom <= 20)
                     return custom;
                 return 2;
             }
