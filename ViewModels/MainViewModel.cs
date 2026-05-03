@@ -48,10 +48,8 @@ namespace SimplexMethodApp.ViewModels
         [NotifyCanExecuteChangedFor(nameof(SolveCommand))]
         public partial string CustomConstraintCount { get; set; }
 
-        [ObservableProperty]
-        public partial ObservableCollection<ObjTermViewModel> ObjectiveCoefficients { get; set; } = new();
-        [ObservableProperty]
-        public partial ObservableCollection<ConstraintRowViewModel> Constraints { get; set; } = new();
+        public ObservableRangeCollection<ObjTermViewModel> ObjectiveCoefficients { get; } = new();
+        public ObservableRangeCollection<ConstraintRowViewModel> Constraints { get; } = new();
         public ObservableCollection<string> ValidationErrors { get; } = new();
 
         public bool HasValidationErrors => ValidationErrors.Count > 0;
@@ -118,7 +116,7 @@ namespace SimplexMethodApp.ViewModels
         {
             int count = GetVariableCount();
             
-            var newObjectiveCoefficients = new ObservableCollection<ObjTermViewModel>();
+            var newObjectiveCoefficients = new List<ObjTermViewModel>();
 
             for (int i = 0; i < count; i++)
             {
@@ -129,7 +127,8 @@ namespace SimplexMethodApp.ViewModels
                 });
             }
 
-            ObjectiveCoefficients = newObjectiveCoefficients;
+            ObjectiveCoefficients.Clear();
+            ObjectiveCoefficients.AddRange(newObjectiveCoefficients);
         }
 
         private void RebuildConstraints()
@@ -137,7 +136,7 @@ namespace SimplexMethodApp.ViewModels
             int variableCount = GetVariableCount();
             int constraintCount = GetConstraintCount();
 
-            var newConstraints = new ObservableCollection<ConstraintRowViewModel>();
+            var newConstraints = new List<ConstraintRowViewModel>();
 
             for (int i = 0; i < constraintCount; i++)
             {
@@ -157,7 +156,8 @@ namespace SimplexMethodApp.ViewModels
                 newConstraints.Add(row);
             }
 
-            Constraints = newConstraints;
+            Constraints.Clear();
+            Constraints.AddRange(newConstraints);
         }
 
         private void UpdateValidationErrors()
