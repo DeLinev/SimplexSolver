@@ -3,6 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:viewmodel="clr-namespace:SimplexMethodApp.ViewModels"
              xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+             xmlns:controls="clr-namespace:SimplexMethodApp.Controls"
              x:DataType="viewmodel:MainViewModel"
              x:Class="SimplexMethodApp.MainPage"
              Title="Simplex Method App">
@@ -63,7 +64,7 @@
                                     StrokeShape="RoundRectangle 8"
                                     MinimumWidthRequest="100"
                                     IsVisible="{Binding IsCustomVariableCount}">
-                                <Entry Text="{Binding CustomVariableCount}"
+                                <controls:NumericEntry Text="{Binding CustomVariableCount}"
                                        Placeholder="N > 20"
                                        Keyboard="Numeric"
                                        HorizontalTextAlignment="Center"
@@ -101,7 +102,7 @@
                                     StrokeShape="RoundRectangle 8"
                                     MinimumWidthRequest="100"
                                     IsVisible="{Binding IsCustomConstraintCount}">
-                                <Entry Text="{Binding CustomConstraintCount}"
+                                <controls:NumericEntry Text="{Binding CustomConstraintCount}"
                                        Placeholder="M > 20"
                                        Keyboard="Numeric"
                                        HorizontalTextAlignment="Center"
@@ -168,7 +169,7 @@
                                                     StrokeThickness="1"
                                                     StrokeShape="RoundRectangle 6"
                                                     MinimumWidthRequest="20">
-                                                <Entry Style="{StaticResource CoeffEntry}"
+                                                <controls:NumericEntry Style="{StaticResource CoeffEntry}"
                                                        Text="{Binding Value}"
                                                        HorizontalTextAlignment="Center"
                                                        VerticalTextAlignment="Center"
@@ -287,7 +288,7 @@
                                                             <Border Stroke="{StaticResource BorderLight}"
                                                                     StrokeThickness="1"
                                                                     StrokeShape="RoundRectangle 6" >
-                                                                <Entry Style="{StaticResource CoeffEntry}"
+                                                                <controls:NumericEntry Style="{StaticResource CoeffEntry}"
                                                                        Text="{Binding Value}"
                                                                        HorizontalTextAlignment="Center"
                                                                        VerticalTextAlignment="Center"
@@ -324,7 +325,7 @@
                                             <Border Stroke="{StaticResource BorderLight}"
                                                     StrokeThickness="1"
                                                     StrokeShape="RoundRectangle 6">
-                                                <Entry Style="{StaticResource CoeffEntry}"
+                                                <controls:NumericEntry Style="{StaticResource CoeffEntry}"
                                                        Text="{Binding RhsValue}"
                                                        Placeholder="b"
                                                        HorizontalTextAlignment="Center"
@@ -356,6 +357,7 @@
                 <Button Grid.Column="1"
                         Text="▶  Розв'язати"
                         Command="{Binding SolveCommand}"
+                        IsEnabled="{Binding HasValidationErrors, Converter={StaticResource InvertedBoolConverter}}"
                         IsVisible="{Binding SolveCommand.IsRunning, Converter={StaticResource InvertedBoolConverter}}"
                         Style="{StaticResource PrimaryButton}" />
 
@@ -369,7 +371,41 @@
             </Grid>
 
             <!-- ─────────────────────────────────────────────────────────
-                 CARD 4 — РОЗВ'ЯЗАННЯ (показується після натискання "Розв'язати")
+             CARD 4 — ERRORS
+             ───────────────────────────────────────────────────────── -->
+            <Border Style="{StaticResource Card}" 
+                    BackgroundColor="{StaticResource DangerLight}"
+                    IsVisible="{Binding HasValidationErrors}">
+                
+                <VerticalStackLayout Spacing="5">
+                
+                    <Label Text="❌  Помилки"
+                           Style="{StaticResource SectionTitle}" />
+
+                    <VerticalStackLayout Spacing="4"
+                             BindableLayout.ItemsSource="{Binding ValidationErrors}">
+                        <BindableLayout.ItemTemplate>
+                            <DataTemplate x:DataType="x:String">
+                                <HorizontalStackLayout Spacing="8">
+                                    <Label Text="•"
+                                           TextColor="{StaticResource Danger}"
+                                           FontSize="14"
+                                           VerticalOptions="Center"/>
+                                    <Label Text="{Binding .}"
+                                           TextColor="{StaticResource Danger}"
+                                           FontSize="13"
+                                           VerticalOptions="Center"/>   
+                                </HorizontalStackLayout>
+                            </DataTemplate>
+                        </BindableLayout.ItemTemplate>
+                    </VerticalStackLayout>
+
+                </VerticalStackLayout>
+                
+            </Border>
+
+            <!-- ─────────────────────────────────────────────────────────
+                 CARD 5 — РОЗВ'ЯЗАННЯ (показується після натискання "Розв'язати")
                  ───────────────────────────────────────────────────────── --><!--
             <Border Style="{StaticResource Card}"
                     IsVisible="{Binding HasSolution}">

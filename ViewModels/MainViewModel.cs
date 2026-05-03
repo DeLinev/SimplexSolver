@@ -1,6 +1,8 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Maui.Controls.PlatformConfiguration;
+using SimplexMethodApp.Utilities;
+using SimplexMethodApp.Validators;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -14,6 +16,9 @@ namespace SimplexMethodApp.ViewModels
         {
             InitializeDefaults();    
         }
+
+        private readonly Debouncer _variableCountDebounce = new();
+        private readonly Debouncer _constraintCountDebounce = new();
 
         public ObservableCollection<string> VariableCountOptions { get; set; }
         public ObservableCollection<string> ConstraintCountOptions { get; set; }
@@ -33,17 +38,29 @@ namespace SimplexMethodApp.ViewModels
         public bool IsCustomConstraintCount => SelectedConstraintOption == "Інше...";
 
         [ObservableProperty]
+        [NotifyDataErrorInfo]
+        [PositiveInteger(2, 100)]
+        [NotifyCanExecuteChangedFor(nameof(SolveCommand))]
         public partial string CustomVariableCount { get; set; }
         [ObservableProperty]
+        [NotifyDataErrorInfo]
+        [PositiveInteger(2, 100)]
+        [NotifyCanExecuteChangedFor(nameof(SolveCommand))]
         public partial string CustomConstraintCount { get; set; }
 
-        public ObservableCollection<ObjTermViewModel> ObjectiveCoefficients { get; } = new();
-        public ObservableCollection<ConstraintRowViewModel> Constraints { get; } = new();
+        [ObservableProperty]
+        public partial ObservableCollection<ObjTermViewModel> ObjectiveCoefficients { get; set; } = new();
+        [ObservableProperty]
+        public partial ObservableCollection<ConstraintRowViewModel> Constraints { get; set; } = new();
+        public ObservableCollection<string> ValidationErrors { get; } = new();
+
+        public bool HasValidationErrors => ValidationErrors.Count > 0;
 
         [RelayCommand]
         private async Task Clear()
         {
             InitializeDefaults();
+            UpdateValidationErrors();
         }
 
         [RelayCommand(CanExecute = nameof(CanSolve), IncludeCancelCommand = true)]
@@ -74,7 +91,7 @@ namespace SimplexMethodApp.ViewModels
             }
         }
 
-        private bool CanSolve() => !IsBusy;
+        private bool CanSolve() => !IsBusy && !HasErrors;
 
         private void InitializeDefaults()
         {
@@ -99,30 +116,34 @@ namespace SimplexMethodApp.ViewModels
 
         private void RebuildObjectiveCoefficients()
         {
-            ObjectiveCoefficients.Clear();
-
             int count = GetVariableCount();
+            
+            var newObjectiveCoefficients = new ObservableCollection<ObjTermViewModel>();
 
             for (int i = 0; i < count; i++)
             {
-                ObjectiveCoefficients.Add(new ObjTermViewModel
+                newObjectiveCoefficients.Add(new ObjTermViewModel
                 {
                     VariableLabel = $"x{ToSubscript(i + 1)}",
                     Separator = i < count - 1 ? " + " : ""
                 });
             }
+
+            ObjectiveCoefficients = newObjectiveCoefficients;
         }
 
         private void RebuildConstraints()
         {
-            Constraints.Clear();
             int variableCount = GetVariableCount();
             int constraintCount = GetConstraintCount();
+
+            var newConstraints = new ObservableCollection<ConstraintRowViewModel>();
+
             for (int i = 0; i < constraintCount; i++)
             {
                 var row = new ConstraintRowViewModel
                 {
-                    Coefficients = new ObservableCollection<ConstraintCoeffViewModel>(),
+                    Coefficients = new ObservableCollection<ConstraintCoeffViewModel>()
                 };
                 for (int j = 0; j < variableCount; j++)
                 {
@@ -132,8 +153,25 @@ namespace SimplexMethodApp.ViewModels
                         Separator = j < variableCount - 1 ? " + " : ""
                     });
                 }
-                Constraints.Add(row);
+
+                newConstraints.Add(row);
             }
+
+            Constraints = newConstraints;
+        }
+
+        private void UpdateValidationErrors()
+        {
+            ValidationErrors.Clear();
+
+            foreach (var error in GetErrors())
+            {
+                if (error.ErrorMessage != null)
+                    ValidationErrors.Add(error.ErrorMessage);
+            }
+
+            OnPropertyChanged(nameof(HasValidationErrors));
+            SolveCommand.NotifyCanExecuteChanged();
         }
 
         private int GetVariableCount()
@@ -178,11 +216,14 @@ namespace SimplexMethodApp.ViewModels
 
         partial void OnCustomVariableCountChanged(string value)
         {
-            if (IsCustomVariableCount)
+            if (!IsCustomVariableCount) return;
+
+            _variableCountDebounce.Run(() =>
             {
                 RebuildObjectiveCoefficients();
                 RebuildConstraints();
-            }
+                UpdateValidationErrors();
+            });
         }
 
         partial void OnSelectedConstraintOptionChanged(string value)
@@ -192,8 +233,13 @@ namespace SimplexMethodApp.ViewModels
 
         partial void OnCustomConstraintCountChanged(string value)
         {
-            if (IsCustomConstraintCount)
+            if (!IsCustomConstraintCount) return;
+
+            _constraintCountDebounce.Run(() =>
+            {
                 RebuildConstraints();
+                UpdateValidationErrors();
+            });
         }
     }
 }

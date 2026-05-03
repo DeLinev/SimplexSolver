@@ -15,6 +15,7 @@
 
     <Color x:Key="Success">#10B981</Color>
     <Color x:Key="Danger">#EF4444</Color>
+    <Color x:Key="DangerLight">#FEE2E2</Color>
     <Color x:Key="Warning">#F59E0B</Color>
 
     <Color x:Key="SurfaceLight">#FFFFFF</Color>
