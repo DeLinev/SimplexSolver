@@ -1,17 +1,19 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using Microsoft.Maui.Controls.PlatformConfiguration;
+using SimplexMethodApp.Models;
 using SimplexMethodApp.Utilities;
 using SimplexMethodApp.Validators;
-using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Text;
 
 namespace SimplexMethodApp.ViewModels
 {
     public partial class MainViewModel : BaseViewModel
     {
+        private const int MinVariables = 2;
+        private const int MaxVariables = 20;
+        private const int MinConstraints = 1;
+        private const int MaxConstraints = 20;
+
         public MainViewModel() 
         {
             InitializeDefaults();    
@@ -39,12 +41,12 @@ namespace SimplexMethodApp.ViewModels
 
         [ObservableProperty]
         [NotifyDataErrorInfo]
-        [PositiveInteger(2, 20, "Значення кількості змінних має бути між 2 та 20")]
+        [PositiveInteger(MinVariables, MaxVariables, "Значення кількості змінних має бути між 2 та 20")]
         [NotifyCanExecuteChangedFor(nameof(SolveCommand))]
         public partial string CustomVariableCount { get; set; }
         [ObservableProperty]
         [NotifyDataErrorInfo]
-        [PositiveInteger(2, 20, "Значення кількості умов-обмежень має бути між 2 та 20")]
+        [PositiveInteger(MinConstraints, MaxConstraints, "Значення кількості умов-обмежень має бути між 2 та 20")]
         [NotifyCanExecuteChangedFor(nameof(SolveCommand))]
         public partial string CustomConstraintCount { get; set; }
 
@@ -64,24 +66,37 @@ namespace SimplexMethodApp.ViewModels
         [RelayCommand(CanExecute = nameof(CanSolve), IncludeCancelCommand = true)]
         private async Task SolveAsync(CancellationToken token)
         {
+            UpdateValidationErrors();
+            if (HasValidationErrors)
+                return;
+
+            if (!TryBuildProblem(out var problem, out var parseErrors))
+            {
+                foreach (var e in parseErrors)
+                    ValidationErrors.Add(e);
+                OnPropertyChanged(nameof(HasValidationErrors));
+                return;
+            }
+
             try
             {
                 IsBusy = true;
-                //ErrorMessage = null;
-                //SolutionSteps.Clear();
+                ValidationErrors.Clear();
+                OnPropertyChanged(nameof(HasValidationErrors));
 
                 //var result = await Task.Run(() => _solver.Solve(/* параметри */), token);
-                // заповнення SolutionSteps, OptimalValueText тощо
                 await Task.Delay(10000, token);
 
             }
             catch (OperationCanceledException)
             {
-                //ErrorMessage = "Обчислення скасовано";
+                ValidationErrors.Add("Розв'язання було скасовано.");
+                OnPropertyChanged(nameof(HasValidationErrors));
             }
             catch (Exception ex)
             {
-                //ErrorMessage = ex.Message;
+                ValidationErrors.Add($"Помилка при розв'язанні: {ex.Message}");
+                OnPropertyChanged(nameof(HasValidationErrors));
             }
             finally
             {
@@ -174,11 +189,91 @@ namespace SimplexMethodApp.ViewModels
             SolveCommand.NotifyCanExecuteChanged();
         }
 
+        private bool TryBuildProblem(out LinearProgrammingProblem problem, out List<string> errorMessages)
+        {
+            errorMessages = new List<string>();
+            problem = null;
+
+            var objectiveCoeffs = new double[ObjectiveCoefficients.Count];
+            for (int i = 0; i < objectiveCoeffs.Length; i++)
+            {
+                if (!double.TryParse(
+                    ObjectiveCoefficients[i].Value, 
+                    System.Globalization.NumberStyles.Any, 
+                    System.Globalization.CultureInfo.InvariantCulture, 
+                    out objectiveCoeffs[i]))
+                {
+                    errorMessages.Add($"Невірний коефіцієнт цільової функції: x{ToSubscript(i + 1)}");
+                }
+            }
+
+            var (m, n) = (Constraints.Count, ObjectiveCoefficients.Count); 
+            var constraintCoeffs = new double[m, n];
+            var rgsValues = new double[m];
+            var signs = new ConstraintSign[m];
+
+            for (int i = 0; i < Constraints.Count; i++)
+            {
+                var row = Constraints[i];
+                for (int j = 0; j < ObjectiveCoefficients.Count; j++)
+                {
+                    if (!double.TryParse(
+                        row.Coefficients[j].Value, 
+                        System.Globalization.NumberStyles.Any, 
+                        System.Globalization.CultureInfo.InvariantCulture, 
+                        out constraintCoeffs[i, j]))
+                    {
+                        errorMessages.Add($"Невірний коефіцієнт в умові {i + 1}: x{ToSubscript(j + 1)}");
+                    }
+                }
+
+                if (!double.TryParse(
+                    row.RhsValue, 
+                    System.Globalization.NumberStyles.Any, 
+                    System.Globalization.CultureInfo.InvariantCulture, 
+                    out rgsValues[i]))
+                {
+                    errorMessages.Add($"Невірне праве значення в умові {i + 1}");
+                }
+
+                try
+                {
+                    signs[i] = row.SelectedSign switch
+                    {
+                        "≤" => ConstraintSign.LessOrEqual,
+                        "=" => ConstraintSign.Equal,
+                        "≥" => ConstraintSign.GreaterOrEqual,
+                        _ => throw new InvalidOperationException("Невідомий знак обмеження")
+                    }; 
+                } 
+                catch (InvalidOperationException e)
+                {
+                    errorMessages.Add($"Невірний знак обмеження в умові {i + 1}");
+                }
+            }
+
+            if (errorMessages.Count > 0)
+                return false;
+
+            problem = new LinearProgrammingProblem
+            {
+                ObjectiveCoefficients = objectiveCoeffs,
+                ConstraintCoefficients = constraintCoeffs,
+                RightHandSideValues = rgsValues,
+                ConstraintSigns = signs,
+                OptimizationType = SelectedOptimizationOption == "max" 
+                                    ? OptimizationType.Maximize 
+                                    : OptimizationType.Minimize
+            };
+
+            return true;
+        }
+
         private int GetVariableCount()
         {
             if (SelectedVariableOption == "Інше...")
             {
-                if (int.TryParse(CustomVariableCount, out int custom) && custom >= 2 && custom <= 20)
+                if (int.TryParse(CustomVariableCount, out int custom) && custom >= MinVariables && custom <= MaxVariables)
                     return custom;
                 return 2;
             }
@@ -193,7 +288,7 @@ namespace SimplexMethodApp.ViewModels
         {
             if (SelectedConstraintOption == "Інше...")
             {
-                if (int.TryParse(CustomConstraintCount, out int custom) && custom >= 2 && custom <= 20)
+                if (int.TryParse(CustomConstraintCount, out int custom) && custom >= MinConstraints && custom <= MaxConstraints)
                     return custom;
                 return 2;
             }

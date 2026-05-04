@@ -63,7 +63,7 @@
                                     MinimumWidthRequest="100"
                                     IsVisible="{Binding IsCustomVariableCount}">
                                 <controls:NumericEntry Text="{Binding CustomVariableCount}"
-                                       Placeholder="N > 20"
+                                       Placeholder="N ≤ 20"
                                        Keyboard="Numeric"
                                        HorizontalTextAlignment="Center"
                                        VerticalTextAlignment="Center"
@@ -101,7 +101,7 @@
                                     MinimumWidthRequest="100"
                                     IsVisible="{Binding IsCustomConstraintCount}">
                                 <controls:NumericEntry Text="{Binding CustomConstraintCount}"
-                                       Placeholder="M > 20"
+                                       Placeholder="M ≤ 20"
                                        Keyboard="Numeric"
                                        HorizontalTextAlignment="Center"
                                        VerticalTextAlignment="Center"
@@ -158,7 +158,7 @@
                                                        Text="{Binding Value}"
                                                        HorizontalTextAlignment="Center"
                                                        VerticalTextAlignment="Center"
-                                                       Placeholder="0" />
+                                                       Placeholder="c" />
 
                                             <Label Text="{Binding DisplayLabel}"
                                                    Style="{StaticResource BodyText}"
@@ -224,11 +224,16 @@
                                FontSize="56"
                                FontAttributes="Bold"
                                TextColor="{StaticResource Primary}"
+                               VerticalTextAlignment="Center"
+                               HorizontalTextAlignment="Center"
+                               HorizontalOptions="Center"
                                VerticalOptions="Center"
+                               Padding="0,0,0,10"
                                Margin="0,0,4,0" />
 
                         <ScrollView Grid.Column="1" 
                                     Orientation="Both" 
+                                    VerticalOptions="Center"
                                     MaximumHeightRequest="300"> 
 
                             <VerticalStackLayout BindableLayout.ItemsSource="{Binding Constraints}"
@@ -252,7 +257,7 @@
                                                                        Text="{Binding Value}"
                                                                        HorizontalTextAlignment="Center"
                                                                        VerticalTextAlignment="Center"
-                                                                       Placeholder="0" />
+                                                                       Placeholder="a" />
                                                             <Label Grid.Column="1"
                                                                    Text="{Binding DisplayLabel}"
                                                                    Style="{StaticResource BodyText}"
@@ -266,15 +271,15 @@
 
                                             <!-- Sign: ≤ / = / ≥ -->
                                             <Border Stroke="{StaticResource Primary}"
-                                        StrokeThickness="1.5"
-                                        StrokeShape="RoundRectangle 8"
-                                        Margin="6,0">
+                                                    StrokeThickness="1.5"
+                                                    StrokeShape="RoundRectangle 8"
+                                                    Margin="6,0">
                                                 <Picker Style="{StaticResource CompactPicker}"
-                                            ItemsSource="{Binding SignOptions}"
-                                            SelectedItem="{Binding SelectedSign}"
-                                            WidthRequest="78"
-                                            TextColor="{StaticResource Primary}"
-                                            FontAttributes="Bold" />
+                                                        ItemsSource="{Binding SignOptions}"
+                                                        SelectedItem="{Binding SelectedSign}"
+                                                        WidthRequest="78"
+                                                        TextColor="{StaticResource Primary}"
+                                                        FontAttributes="Bold" />        
                                             </Border>
 
                                             <!-- Right-hand side bᵢ -->
@@ -310,7 +315,6 @@
                 <Button Grid.Column="1"
                         Text="▶  Розв'язати"
                         Command="{Binding SolveCommand}"
-                        IsEnabled="{Binding HasValidationErrors, Converter={StaticResource InvertedBoolConverter}}"
                         IsVisible="{Binding SolveCommand.IsRunning, Converter={StaticResource InvertedBoolConverter}}"
                         Style="{StaticResource PrimaryButton}" />
 
