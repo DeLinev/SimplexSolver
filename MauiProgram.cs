@@ -1,6 +1,7 @@
 ﻿using CommunityToolkit.Maui;
 using Microsoft.Extensions.Logging;
 using SimplexMethodApp.Extensions;
+using SimplexMethodApp.Services;
 using SimplexMethodApp.ViewModels;
 
 namespace SimplexMethodApp
@@ -26,6 +27,7 @@ namespace SimplexMethodApp
 
             builder.Services.AddTransient<MainViewModel>();
             builder.Services.AddTransient<MainPage>();
+            builder.Services.AddSingleton<ISimplexSolverService, SimplexSolverService>();
 
             return builder.Build();
         }

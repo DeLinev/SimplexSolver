@@ -1,6 +1,7 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using SimplexMethodApp.Models;
+using SimplexMethodApp.Services;
 using SimplexMethodApp.Utilities;
 using SimplexMethodApp.Validators;
 using System.Collections.ObjectModel;
@@ -13,9 +14,10 @@ namespace SimplexMethodApp.ViewModels
         private const int MaxVariables = 20;
         private const int MinConstraints = 1;
         private const int MaxConstraints = 20;
-
-        public MainViewModel() 
+        private readonly ISimplexSolverService _solver;
+        public MainViewModel(ISimplexSolverService solver) 
         {
+            _solver = solver;
             InitializeDefaults();    
         }
 
@@ -84,8 +86,9 @@ namespace SimplexMethodApp.ViewModels
                 ValidationErrors.Clear();
                 OnPropertyChanged(nameof(HasValidationErrors));
 
-                //var result = await Task.Run(() => _solver.Solve(/* параметри */), token);
-                await Task.Delay(10000, token);
+                var result = await Task.Run(() => _solver.Solve(problem), token);
+                //await Task.Delay(10000, token);
+                await App.Current.MainPage.DisplayAlertAsync("Результат", result.OptimalValue.ToString(), "OK");
 
             }
             catch (OperationCanceledException)
@@ -137,7 +140,7 @@ namespace SimplexMethodApp.ViewModels
             {
                 newObjectiveCoefficients.Add(new ObjTermViewModel
                 {
-                    VariableLabel = $"x{ToSubscript(i + 1)}",
+                    VariableLabel = $"x{SimplexSolverService.ToSubscript(i + 1)}",
                     Separator = i < count - 1 ? " + " : ""
                 });
             }
@@ -163,7 +166,7 @@ namespace SimplexMethodApp.ViewModels
                 {
                     row.Coefficients.Add(new ConstraintCoeffViewModel
                     {
-                        VariableLabel = $"x{ToSubscript(j + 1)}",
+                        VariableLabel = $"x{SimplexSolverService.ToSubscript(j + 1)}",
                         Separator = j < variableCount - 1 ? " + " : ""
                     });
                 }
@@ -203,7 +206,7 @@ namespace SimplexMethodApp.ViewModels
                     System.Globalization.CultureInfo.InvariantCulture, 
                     out objectiveCoeffs[i]))
                 {
-                    errorMessages.Add($"Невірний коефіцієнт цільової функції: x{ToSubscript(i + 1)}");
+                    errorMessages.Add($"Невірний коефіцієнт цільової функції: x{SimplexSolverService.ToSubscript(i + 1)}");
                 }
             }
 
@@ -223,7 +226,7 @@ namespace SimplexMethodApp.ViewModels
                         System.Globalization.CultureInfo.InvariantCulture, 
                         out constraintCoeffs[i, j]))
                     {
-                        errorMessages.Add($"Невірний коефіцієнт в умові {i + 1}: x{ToSubscript(j + 1)}");
+                        errorMessages.Add($"Невірний коефіцієнт в умові {i + 1}: x{SimplexSolverService.ToSubscript(j + 1)}");
                     }
                 }
 
@@ -240,9 +243,9 @@ namespace SimplexMethodApp.ViewModels
                 {
                     signs[i] = row.SelectedSign switch
                     {
-                        "≤" => ConstraintSign.LessOrEqual,
+                        "≤" => ConstraintSign.LessThanOrEqual,
                         "=" => ConstraintSign.Equal,
-                        "≥" => ConstraintSign.GreaterOrEqual,
+                        "≥" => ConstraintSign.GreaterThanOrEqual,
                         _ => throw new InvalidOperationException("Невідомий знак обмеження")
                     }; 
                 } 
@@ -295,12 +298,6 @@ namespace SimplexMethodApp.ViewModels
             if (int.TryParse(SelectedConstraintOption, out int selected))
                 return selected;
             return 2;
-        }
-
-        private static string ToSubscript(int n)
-        {
-            var subscripts = new[] { '₀', '₁', '₂', '₃', '₄', '₅', '₆', '₇', '₈', '₉' };
-            return string.Concat(n.ToString().Select(c => subscripts[c - '0']));
         }
 
         partial void OnSelectedVariableOptionChanged(string value)

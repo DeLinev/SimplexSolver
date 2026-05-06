@@ -2,8 +2,8 @@
 {
     public enum ConstraintSign
     {
-        LessOrEqual,
+        LessThanOrEqual,
         Equal,
-        GreaterOrEqual
+        GreaterThanOrEqual
     }
 }
