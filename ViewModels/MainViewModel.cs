@@ -1,9 +1,12 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using SimplexMethodApp.Models;
+using SimplexMethodApp.Models.Simplex.Enums;
+using SimplexMethodApp.Models.Simplex;
 using SimplexMethodApp.Services;
 using SimplexMethodApp.Utilities;
 using SimplexMethodApp.Validators;
+using SimplexMethodApp.ViewModels.Simplex;
 using System.Collections.ObjectModel;
 
 namespace SimplexMethodApp.ViewModels
@@ -58,6 +61,23 @@ namespace SimplexMethodApp.ViewModels
 
         public bool HasValidationErrors => ValidationErrors.Count > 0;
 
+        [ObservableProperty]
+        public partial bool IsSolutionVisible { get; set; }
+
+        [ObservableProperty]
+        public partial string OptimalValue { get; set; }
+
+        [ObservableProperty]
+        public partial string OptimalVariables { get; set; }
+
+        [ObservableProperty]
+        public partial string SolutionStatusText { get; set; }
+
+        [ObservableProperty]
+        public partial Color SolutionStatusColor { get; set; }
+
+        public ObservableCollection<SolutionStepViewModel> SolutionSteps { get; } = new();
+
         [RelayCommand]
         private async Task Clear()
         {
@@ -83,13 +103,14 @@ namespace SimplexMethodApp.ViewModels
             try
             {
                 IsBusy = true;
+                IsSolutionVisible = false;
                 ValidationErrors.Clear();
                 OnPropertyChanged(nameof(HasValidationErrors));
 
-                var result = await Task.Run(() => _solver.Solve(problem), token);
-                //await Task.Delay(10000, token);
-                await App.Current.MainPage.DisplayAlertAsync("Результат", result.OptimalValue.ToString(), "OK");
+                var result = await Task.Run(() => _solver.Solve(problem, token), token);
 
+                PopulateSolution(result);
+                IsSolutionVisible = true;
             }
             catch (OperationCanceledException)
             {
@@ -106,6 +127,38 @@ namespace SimplexMethodApp.ViewModels
                 IsBusy = false;
             }
         }
+
+        private void PopulateSolution(SimplexSolution result)
+        {
+            SolutionSteps.Clear();
+
+            foreach (var step in result.Steps)
+                SolutionSteps.Add(SolutionStepBuilder.Build(step));
+
+            switch (result.Status)
+            {
+                case SolutionStatus.Optimal:
+                case SolutionStatus.AlternateOptimum:
+                    SolutionStatusColor = Color.FromArgb("#10B981");
+                    OptimalValue = $"F* = {result.OptimalValue:G6}";
+                    OptimalVariables = string.Join(",  ",
+                        result.VariableValues.Select(kv => $"{kv.Key} = {kv.Value:G6}"));
+                    break;
+
+                case SolutionStatus.Infeasible:
+                    SolutionStatusColor = Color.FromArgb("#EF4444");
+                    OptimalValue = "Розв'язку не існує";
+                    OptimalVariables = "";
+                    break;
+
+                case SolutionStatus.Unbounded:
+                    SolutionStatusColor = Color.FromArgb("#F59E0B");
+                    OptimalValue = "Функція необмежена";
+                    OptimalVariables = "";
+                    break;
+            }
+        }
+
 
         private bool CanSolve() => !IsBusy && !HasErrors;
 
