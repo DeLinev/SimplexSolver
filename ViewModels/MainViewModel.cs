@@ -20,16 +20,21 @@ namespace SimplexMethodApp.ViewModels
         private readonly ISimplexSolverService _solver;
         public MainViewModel(ISimplexSolverService solver) 
         {
-            _solver = solver;
-            InitializeDefaults();    
+            _solver = solver;   
         }
 
         private readonly Debouncer _variableCountDebounce = new();
         private readonly Debouncer _constraintCountDebounce = new();
 
-        public ObservableCollection<string> VariableCountOptions { get; set; }
-        public ObservableCollection<string> ConstraintCountOptions { get; set; }
-        public ObservableCollection<string> OptimizationOptions { get; set; }
+        public ObservableCollection<string> VariableCountOptions { get; } =
+            new(Enumerable.Range(2, 9).Select(i => i.ToString()).Append("Інше..."));
+
+        public ObservableCollection<string> ConstraintCountOptions { get; } =
+            new(Enumerable.Range(2, 9).Select(i => i.ToString()).Append("Інше..."));
+
+        public ObservableCollection<string> OptimizationOptions { get; } =
+            new(["max", "min"]);
+
 
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(IsCustomVariableCount))]
@@ -164,23 +169,22 @@ namespace SimplexMethodApp.ViewModels
 
         private void InitializeDefaults()
         {
-            VariableCountOptions = new ObservableCollection<string>(
-                Enumerable.Range(2, 9).Select(i => i.ToString()).Concat(new[] { "Інше..." })
-            );
             SelectedVariableOption = VariableCountOptions[0];
             CustomVariableCount = "2";
 
-            ConstraintCountOptions = new ObservableCollection<string>(
-                Enumerable.Range(2, 9).Select(i => i.ToString()).Concat(new[] { "Інше..." })
-            );
             SelectedConstraintOption = ConstraintCountOptions[0];
             CustomConstraintCount = "2";
 
-            OptimizationOptions = new ObservableCollection<string>(["max", "min"]);
             SelectedOptimizationOption = OptimizationOptions[0];
 
             RebuildObjectiveCoefficients();
             RebuildConstraints();
+        }
+
+        public async Task InitializeAsync()
+        {
+            await Task.Delay(50);
+            InitializeDefaults();
         }
 
         private void RebuildObjectiveCoefficients()

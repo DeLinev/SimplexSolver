@@ -4,6 +4,7 @@
              xmlns:viewmodel="clr-namespace:SimplexMethodApp.ViewModels"
              xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
              xmlns:controls="clr-namespace:SimplexMethodApp.Controls"
+             xmlns:solution="clr-namespace:SimplexMethodApp.ViewModels.Simplex"
              x:DataType="viewmodel:MainViewModel"
              x:Class="SimplexMethodApp.MainPage"
              Title="Simplex Method App">
@@ -11,12 +12,16 @@
     <ContentPage.Resources>
         <ResourceDictionary>
             <toolkit:InvertedBoolConverter x:Key="InvertedBoolConverter" />
+            <toolkit:IsStringNotNullOrEmptyConverter x:Key="StringToBoolConverter" />
         </ResourceDictionary>
     </ContentPage.Resources>
-    
-    <ScrollView BackgroundColor="{AppThemeBinding Light={StaticResource BackgroundLight},
-                                                   Dark={StaticResource BackgroundDark}}">
-        <VerticalStackLayout Padding="16,14,16,30" Spacing="0">
+
+    <CollectionView
+        ItemsSource="{Binding SolutionSteps}"
+        BackgroundColor="{AppThemeBinding Light={StaticResource BackgroundLight},
+                                          Dark={StaticResource BackgroundDark}}">
+        <CollectionView.Header>
+            <VerticalStackLayout Padding="16,14,16,0" Spacing="0">
 
             <!-- ─────────────────────────────────────────────────────────
                  HEADER
@@ -53,7 +58,7 @@
                             <Picker Grid.Column="0"
                                     Style="{StaticResource CompactPicker}"
                                     ItemsSource="{Binding VariableCountOptions}"
-                                    SelectedItem="{Binding SelectedVariableOption}"
+                                    SelectedItem="{Binding SelectedVariableOption, Mode=TwoWay}"
                                     Title="Оберіть кількість..." />
 
                             <Border Grid.Column="1"
@@ -363,164 +368,112 @@
 
             <!-- ─────────────────────────────────────────────────────────
                  CARD 5 — SOLUTION STEPS & OPTIMAL SOLUTION
-                 ───────────────────────────────────────────────────────── --><!--
+                 ───────────────────────────────────────────────────────── -->
             <Border Style="{StaticResource Card}"
-                    IsVisible="{Binding HasSolution}">
-                <VerticalStackLayout Spacing="14">
-
-                    <Label Text="📊  Розв'язання"
+                    IsVisible="{Binding IsSolutionVisible}"
+                    Margin="0,0,0,0">
+                <VerticalStackLayout Spacing="6">
+                    <Label Text="📊  Результат"
                            Style="{StaticResource SectionTitle}" />
+                    <Label Text="{Binding OptimalValue}"
+                           FontSize="18"
+                           FontAttributes="Bold"
+                           TextColor="{Binding SolutionStatusColor}" />
+                    <Label Text="{Binding OptimalVariables}"
+                           FontSize="14"
+                           TextColor="{StaticResource TextSecondary}"
+                           IsVisible="{Binding OptimalVariables,
+                               Converter={StaticResource StringToBoolConverter}}" />
+                </VerticalStackLayout>
+            </Border>
 
-                    --><!-- ── Повідомлення про помилку ── --><!--
-                    <Border BackgroundColor="#FEF2F2"
-                            Stroke="#FCA5A5"
-                            StrokeThickness="1"
-                            StrokeShape="RoundRectangle 8"
-                            Padding="14,10"
-                            IsVisible="{Binding HasError}">
-                        <HorizontalStackLayout Spacing="8">
-                            <Label Text="⚠"
-                                   FontSize="16"
-                                   TextColor="{StaticResource Danger}"
-                                   VerticalOptions="Center" />
-                            <Label Text="{Binding ErrorMessage}"
-                                   FontSize="13"
-                                   TextColor="{StaticResource Danger}"
-                                   VerticalOptions="Center" />
-                        </HorizontalStackLayout>
-                    </Border>
+            <BoxView Style="{StaticResource Divider}" 
+                     Color="{StaticResource Gray200}"
+                     HeightRequest="1.5"
+                     WidthRequest="100"
+                     Margin="0,20"/>
 
-                    --><!-- ── Кроки симплекс-методу ── --><!--
-                    <VerticalStackLayout Spacing="12"
-                                         BindableLayout.ItemsSource="{Binding SolutionSteps}">
-                        <BindableLayout.ItemTemplate>
-                            <DataTemplate>
-                                --><!--
-                                    SolutionStepViewModel:
-                                        Title       : string  → "Початковий крок" / "Ітерація 1"
-                                        Description : string  → пояснення дій на цьому кроці
-                                        HasTable    : bool
-                                        TableRows   : ObservableCollection<SimplexTableRowViewModel>
-                                            SimplexTableRowViewModel:
-                                                BasisVar   : string
-                                                Cb         : string
-                                                P          : string
-                                                Cells      : ObservableCollection<CellViewModel>
-                                                    CellViewModel:
-                                                        Value        : string
-                                                        IsHighlighted: bool  → опорний елемент
-                                                        IsEntering   : bool  → стовпець, що входить
-                                                        IsLeaving    : bool  → рядок, що виходить
-                                                Q          : string
-                                                IsEstimate : bool  → останній рядок (оцінки)
-                                --><!--
-                                <Border BackgroundColor="{AppThemeBinding
-                                            Light=#F8FAFC, Dark=#162030}"
-                                        Stroke="{AppThemeBinding
-                                            Light={StaticResource BorderLight},
-                                            Dark={StaticResource BorderDark}}"
-                                        StrokeThickness="1"
-                                        StrokeShape="RoundRectangle 10"
-                                        Padding="14">
-                                    <VerticalStackLayout Spacing="8">
+            <Label Text="🔢  Покроковий розв'язок"
+                   Style="{StaticResource SectionTitle}"
+                   IsVisible="{Binding IsSolutionVisible}"
+                   Margin="0,0,0,10"/>
+                
+            </VerticalStackLayout>
+        </CollectionView.Header>
 
-                                        --><!-- Заголовок кроку --><!--
-                                        <Label Text="{Binding Title}"
-                                               FontAttributes="Bold"
-                                               FontSize="14"
-                                               TextColor="{StaticResource Primary}" />
+        <CollectionView.ItemTemplate>
+            <DataTemplate x:DataType="solution:SolutionStepViewModel">
+                <Grid Padding="16,0,16,12">
+                    <Border Style="{StaticResource Card}" >
+                        <VerticalStackLayout Spacing="10" >
 
-                                        --><!-- Опис / пояснення --><!--
-                                        <Label Text="{Binding Description}"
-                                               FontSize="12"
-                                               LineBreakMode="WordWrap"
-                                               TextColor="{AppThemeBinding
-                                                   Light={StaticResource TextSecondary},
-                                                   Dark={StaticResource TextSecondaryDark}}"
-                                               IsVisible="{Binding HasDescription}" />
-
-                                        --><!-- ─── Симплекс-таблиця ─── -->
-                                        <!--
-                                            ПРИМІТКА: Таблиця будується у code-behind або через
-                                            ContentView/CustomView, бо кількість стовпців динамічна.
-                                            Тут залишено ScrollView як контейнер-плейсхолдер.
-                                            Рекомендована реалізація: Grid програмно або DataGrid
-                                            від CommunityToolkit.
-                                        --><!--
-                                        <ScrollView Orientation="Horizontal"
-                                                    HorizontalScrollBarVisibility="Always"
-                                                    IsVisible="{Binding HasTable}">
-                                            --><!--
-                                                Вставити сюди кастомний SimplexTableView:
-                                                <views:SimplexTableView
-                                                    Rows="{Binding TableRows}" />
-                                            --><!--
-                                            <ContentView x:Name="TablePlaceholder"
-                                                         BindingContext="{Binding}"
-                                                         MinimumWidthRequest="300" />
-                                        </ScrollView>
-
-                                    </VerticalStackLayout>
-                                </Border>
-                            </DataTemplate>
-                        </BindableLayout.ItemTemplate>
-                    </VerticalStackLayout>
-
-                    --><!-- ── Оптимальний розв'язок (фінальний блок) ── --><!--
-                    <Border BackgroundColor="{AppThemeBinding
-                                Light=#EFF6FF, Dark=#0D2744}"
-                            Stroke="{StaticResource Primary}"
-                            StrokeThickness="2"
-                            StrokeShape="RoundRectangle 12"
-                            Padding="16"
-                            IsVisible="{Binding HasOptimalSolution}">
-                        <VerticalStackLayout Spacing="8">
-
+                            <!-- Step header -->
                             <HorizontalStackLayout Spacing="8">
-                                <Label Text="✅"
-                                       FontSize="18"
-                                       VerticalOptions="Center" />
-                                <Label Text="Оптимальний розв'язок"
-                                       FontAttributes="Bold"
-                                       FontSize="15"
-                                       TextColor="{StaticResource Primary}"
-                                       VerticalOptions="Center" />
+                                <Label Text="{Binding TypeIcon}"
+                               FontSize="16"
+                               VerticalOptions="Center" />
+                                <Label Text="{Binding Title}"
+                               FontAttributes="Bold"
+                               FontSize="14"
+                               TextColor="{Binding TitleColor}"
+                               VerticalOptions="Center" />
                             </HorizontalStackLayout>
 
-                            <BoxView Style="{StaticResource Divider}" Margin="0,0" />
+                            <!-- Description -->
+                            <Label Text="{Binding Description}"
+                           FontSize="12"
+                           LineBreakMode="WordWrap"
+                           TextColor="{StaticResource TextSecondary}"
+                           IsVisible="{Binding Description,
+                               Converter={StaticResource StringToBoolConverter}}" />
 
-                            --><!-- F* = ... --><!--
-                            <Label Text="{Binding OptimalValueText}"
-                                   FontSize="18"
-                                   FontAttributes="Bold"
-                                   TextColor="{AppThemeBinding
-                                       Light={StaticResource TextPrimary},
-                                       Dark={StaticResource TextPrimaryDark}}" />
+                            <!-- Table -->
+                            <ScrollView Orientation="Horizontal"
+                                        IsVisible="{Binding HasTable}"
+                                        HorizontalScrollBarVisibility="Default">
+                                <VerticalStackLayout
+                                        Spacing="1"
+                                        HorizontalOptions="Start"
+                                        BindableLayout.ItemsSource="{Binding TableRows}">
+                                    <BindableLayout.ItemTemplate>
+                                        <DataTemplate x:DataType="solution:SimplexTableRowViewModel">
 
-                            --><!-- x₁ = ...,  x₂ = ..., ... --><!--
-                            <Label Text="{Binding OptimalVariablesText}"
-                                   FontSize="14"
-                                   TextColor="{AppThemeBinding
-                                       Light={StaticResource TextSecondary},
-                                       Dark={StaticResource TextSecondaryDark}}" />
+                                            <HorizontalStackLayout
+                                                    BackgroundColor="{Binding RowBackground}"
+                                                    Spacing="1"
+                                                    HorizontalOptions="Start"
+                                                    BindableLayout.ItemsSource="{Binding Cells}">
+                                                <BindableLayout.ItemTemplate>
+                                                    <DataTemplate x:DataType="solution:SimplexTableCellViewModel">
+
+                                                        <Label Text="{Binding Text}"
+                                                           WidthRequest="80"          
+                                                           HeightRequest="36"
+                                                           BackgroundColor="{Binding Background}"
+                                                           TextColor="{Binding TextColor}"
+                                                           FontAttributes="{Binding FontWeight}"
+                                                           FontSize="13" 
+                                                           HorizontalOptions="Fill"   
+                                                           VerticalOptions="Fill"
+                                                           HorizontalTextAlignment="Center"
+                                                           VerticalTextAlignment="Center"
+                                                           Padding="0,0" />
+
+                                                    </DataTemplate>
+                                                </BindableLayout.ItemTemplate>
+                                            </HorizontalStackLayout>
+
+                                        </DataTemplate>
+                                    </BindableLayout.ItemTemplate>
+                                </VerticalStackLayout>
+                            </ScrollView>
 
                         </VerticalStackLayout>
                     </Border>
-
-                    --><!-- ── Кнопка копіювання результату ── --><!--
-                    <Button Text="📋 Копіювати результат"
-                            Command="{Binding CopyResultCommand}"
-                            BackgroundColor="Transparent"
-                            TextColor="{StaticResource Primary}"
-                            FontSize="13"
-                            HorizontalOptions="End"
-                            HeightRequest="36"
-                            IsVisible="{Binding HasOptimalSolution}" />
-
-                </VerticalStackLayout>
-            </Border>-->
-
-        </VerticalStackLayout>
-    </ScrollView>
+                </Grid>
+            </DataTemplate>
+        </CollectionView.ItemTemplate>
+        
+    </CollectionView>
 
 </ContentPage>
