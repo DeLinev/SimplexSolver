@@ -145,7 +145,7 @@ namespace SimplexMethodApp.ViewModels
                 case SolutionStatus.Optimal:
                 case SolutionStatus.AlternateOptimum:
                     SolutionStatusColor = Color.FromArgb("#10B981");
-                    OptimalValue = $"F* = {result.OptimalValue:G6}";
+                    OptimalValue = $"F[{SelectedOptimizationOption}] = {result.OptimalValue:G6}";
                     OptimalVariables = string.Join(",  ",
                         result.VariableValues.Select(kv => $"{kv.Key} = {kv.Value:G6}"));
                     break;
@@ -197,7 +197,7 @@ namespace SimplexMethodApp.ViewModels
             {
                 newObjectiveCoefficients.Add(new ObjTermViewModel
                 {
-                    VariableLabel = $"x{SimplexSolverService.ToSubscript(i + 1)}",
+                    VariableLabel = $"x{SubscriptConverter.ToSubscript(i + 1)}",
                     Separator = i < count - 1 ? " + " : ""
                 });
             }
@@ -223,7 +223,7 @@ namespace SimplexMethodApp.ViewModels
                 {
                     row.Coefficients.Add(new ConstraintCoeffViewModel
                     {
-                        VariableLabel = $"x{SimplexSolverService.ToSubscript(j + 1)}",
+                        VariableLabel = $"x{SubscriptConverter.ToSubscript(j + 1)}",
                         Separator = j < variableCount - 1 ? " + " : ""
                     });
                 }
@@ -263,7 +263,7 @@ namespace SimplexMethodApp.ViewModels
                     System.Globalization.CultureInfo.InvariantCulture, 
                     out objectiveCoeffs[i]))
                 {
-                    errorMessages.Add($"Невірний коефіцієнт цільової функції: x{SimplexSolverService.ToSubscript(i + 1)}");
+                    errorMessages.Add($"Невірний коефіцієнт цільової функції: x{SubscriptConverter.ToSubscript(i + 1)}");
                 }
             }
 
@@ -283,7 +283,7 @@ namespace SimplexMethodApp.ViewModels
                         System.Globalization.CultureInfo.InvariantCulture, 
                         out constraintCoeffs[i, j]))
                     {
-                        errorMessages.Add($"Невірний коефіцієнт в умові {i + 1}: x{SimplexSolverService.ToSubscript(j + 1)}");
+                        errorMessages.Add($"Невірний коефіцієнт в умові {i + 1}: x{SubscriptConverter.ToSubscript(j + 1)}");
                     }
                 }
 

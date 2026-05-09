@@ -9,6 +9,8 @@ namespace SimplexMethodApp.ViewModels.Simplex
         public StepType Type { get; init; }
         public bool HasTable { get; init; }
         public List<SimplexTableRowViewModel> TableRows { get; init; } = new();
+        public List<string> Equations { get; init; } = new();
+        public bool HasEquations => Equations.Count > 0;
 
         public Color TitleColor => Type switch
         {

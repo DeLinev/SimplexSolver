@@ -12,7 +12,8 @@ namespace SimplexMethodApp.ViewModels.Simplex
                 Description = step.Description,
                 Type = step.Type,
                 HasTable = step.Table != null,
-                TableRows = step.Table != null ? BuildRows(step.Table) : new()
+                TableRows = step.Table != null ? BuildRows(step.Table) : new(),
+                Equations = step.Equations,
             };
         }
 
@@ -52,7 +53,7 @@ namespace SimplexMethodApp.ViewModels.Simplex
             {
                 bool isLeaving = i == table.LeavingRowIndex;
                 string basisName = table.BasicVariables[i].Name;
-                if (isLeaving) basisName += "←";
+                if (isLeaving) basisName = "← " + basisName;
 
                 var cells = new List<SimplexTableCellViewModel>
                 {
@@ -75,7 +76,7 @@ namespace SimplexMethodApp.ViewModels.Simplex
 
                 string qText = table.QValues[i].HasValue
                     ? FormatDouble(table.QValues[i]!.Value)
-                    : "∞";
+                    : "-";
                 cells.Add(Cell(qText, isLeaving: isLeaving));
 
                 rows.Add(new SimplexTableRowViewModel { Cells = cells, IsLeavingRow = isLeaving });

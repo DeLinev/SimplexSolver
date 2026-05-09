@@ -1,6 +1,7 @@
 ﻿using SimplexMethodApp.Models;
 using SimplexMethodApp.Models.Simplex;
 using SimplexMethodApp.Models.Simplex.Enums;
+using SimplexMethodApp.Utilities;
 
 namespace SimplexMethodApp.Services
 {
@@ -177,7 +178,8 @@ namespace SimplexMethodApp.Services
                 {
                     Type = StepType.OriginalProblem,
                     Title = "Нормалізація правої частини",
-                    Description = "Позбавляємось від від'ємних значень з правої сторони обмежень шляхом множення рядків на -1."
+                    Description = "Позбавляємось від від'ємних значень з правої сторони обмежень шляхом множення рядків на -1.",
+                    Equations = BuildNormalizedProblemEquations(normalizedProblem)
                 });
             }
 
@@ -215,7 +217,7 @@ namespace SimplexMethodApp.Services
             {
                 simplexTable.Variables.Add(new SimplexVariable
                 {
-                    Name = $"x{ToSubscript(j + 1)}",
+                    Name = $"x{SubscriptConverter.ToSubscript(j + 1)}",
                     Type = VariableType.Original,
                     Index = j + 1,
                     Coefficient = problem.ObjectiveCoefficients[j]
@@ -243,7 +245,7 @@ namespace SimplexMethodApp.Services
                 {
                     var slackVar = new SimplexVariable
                     {
-                        Name = $"s{ToSubscript(currentSlackIndex + 1)}",
+                        Name = $"s{SubscriptConverter.ToSubscript(currentSlackIndex + 1)}",
                         Type = VariableType.Slack,
                         Index = currentSlackIndex + 1,
                         Coefficient = MValue.Zero
@@ -261,7 +263,7 @@ namespace SimplexMethodApp.Services
                 {
                     var surplusVar = new SimplexVariable
                     {
-                        Name = $"s{ToSubscript(currentSlackIndex + 1)}",
+                        Name = $"s{SubscriptConverter.ToSubscript(currentSlackIndex + 1)}",
                         Type = VariableType.Surplus,
                         Index = currentSlackIndex + 1,
                         Coefficient = MValue.Zero
@@ -272,7 +274,7 @@ namespace SimplexMethodApp.Services
 
                     var artifVar = new SimplexVariable
                     {
-                        Name = $"a{ToSubscript(currentArtifIndex + 1)}",
+                        Name = $"a{SubscriptConverter.ToSubscript(currentArtifIndex + 1)}",
                         Type = VariableType.Artificial,
                         Index = currentArtifIndex + 1,
                         Coefficient = new MValue(0, -optSign)
@@ -289,7 +291,7 @@ namespace SimplexMethodApp.Services
                 {
                     var artifVar = new SimplexVariable
                     {
-                        Name = $"a{ToSubscript(currentArtifIndex + 1)}",
+                        Name = $"a{SubscriptConverter.ToSubscript(currentArtifIndex + 1)}",
                         Type = VariableType.Artificial,
                         Index = currentArtifIndex + 1,
                         Coefficient = new MValue(0, -optSign)
@@ -307,24 +309,23 @@ namespace SimplexMethodApp.Services
             simplexTable.Variables.AddRange(slackVariables);
             simplexTable.Variables.AddRange(artifVariables);
 
+            string title = artifCols > 0
+                ? "Приведення до стандартної форми та додавання штучних змінних"
+                : "Приведення до стандартної форми";
+
+            string description = artifCols > 0
+                ? "Нерівності перетворено на рівності за допомогою балансуючих змінних. " +
+                  "Для обмежень типу '≥' та '=' додано штучні змінні з коефіцієнтом " +
+                  (optSign == 1 ? "-M" : "+M") + " у цільовій функції (M-метод)."
+                : "Нерівності перетворено на рівності за допомогою балансуючих змінних.";
+
             Steps.Add(new SimplexStep
             {
                 Type = StepType.StandardFormConversion,
-                Title = "Приведення до стандартної форми",
-                Description = "Додано балансуючі змінні для перетворення нерівностей у рівності.",
-                Table = simplexTable
+                Title = title,
+                Description = description,
+                Equations = BuildStandardFormEquations(simplexTable, problem.OptimizationType)
             });
-
-            if (artifCols > 0)
-            {
-                Steps.Add(new SimplexStep
-                {
-                    Type = StepType.ArtificialVariablesAdded,
-                    Title = "Додавання штучних змінних",
-                    Description = "Для обмежень типу '≥' та '=' додано штучні змінні.",
-                    Table = simplexTable
-                });
-            }
 
             return simplexTable;
         }
@@ -506,10 +507,119 @@ namespace SimplexMethodApp.Services
             table.Cb[leavingRow] = table.BasicVariables[leavingRow].Coefficient;
         }
 
-        public static string ToSubscript(int n)
+        private List<string> BuildNormalizedProblemEquations(LinearProgrammingProblem problem)
         {
-            var subscripts = new[] { '₀', '₁', '₂', '₃', '₄', '₅', '₆', '₇', '₈', '₉' };
-            return string.Concat(n.ToString().Select(c => subscripts[c - '0']));
+            var lines = new List<string>();
+
+            lines.Add(BuildObjectiveLine(
+                problem.ObjectiveCoefficients,
+                Enumerable.Range(1, problem.VariableCount)
+                          .Select(i => $"x{SubscriptConverter.ToSubscript(i)}").ToArray(),
+                problem.OptimizationType));
+
+            for (int i = 0; i < problem.ConstraintCount; i++)
+            {
+                var coeffs = Enumerable.Range(0, problem.VariableCount)
+                    .Select(j => problem.ConstraintCoefficients[i, j])
+                    .ToArray();
+                var varNames = Enumerable.Range(1, problem.VariableCount)
+                    .Select(j => $"x{SubscriptConverter.ToSubscript(j)}").ToArray();
+                string sign = SignToString(problem.ConstraintSigns[i]);
+                string rhs = FormatNum(problem.RightHandSideValues[i]);
+
+                lines.Add($"{BuildTerms(coeffs, varNames)} {sign} {rhs}");
+            }
+
+            return lines;
         }
+
+        private List<string> BuildStandardFormEquations(SimplexTable table, OptimizationType optType)
+        {
+            var lines = new List<string>();
+            int rows = table.Matrix.GetLength(0);
+            var varNames = table.Variables.Select(v => v.Name).ToArray();
+
+            var objCoeffs = table.Variables.Select(v => v.Coefficient).ToArray();
+            lines.Add(BuildMObjectiveLine(objCoeffs, varNames, optType));
+
+            for (int i = 0; i < rows; i++)
+            {
+                var rowCoeffs = Enumerable.Range(0, table.Variables.Count)
+                    .Select(j => table.Matrix[i, j])
+                    .ToArray();
+                string rhs = FormatNum(table.Plan[i]);
+                lines.Add($"{BuildTerms(rowCoeffs, varNames)} = {rhs}");
+            }
+
+            return lines;
+        }
+
+
+        private static string BuildObjectiveLine(double[] coeffs, string[] names, OptimizationType optType)
+        {
+            string direction = optType == OptimizationType.Maximize ? "max" : "min";
+            return $"F(x) = {BuildTerms(coeffs, names)} → {direction}";
+        }
+
+        private static string BuildMObjectiveLine(MValue[] coeffs, string[] names, OptimizationType optType)
+        {
+            var terms = new List<string>();
+            for (int j = 0; j < coeffs.Length; j++)
+            {
+                if (coeffs[j].IsZero) continue;
+
+                bool isFirst = terms.Count == 0;
+                string mStr = coeffs[j].ToDisplayString();
+                string varPart = names[j];
+
+                terms.Add(isFirst ? $"{mStr}{varPart}" : $"+ {mStr}{varPart}");
+            }
+
+            string direction = optType == OptimizationType.Maximize ? "max" : "min";
+            string termsStr = terms.Count > 0 ? string.Join(" ", terms) : "0";
+            return $"F(x) = {termsStr} → {direction}";
+        }
+
+        private static string BuildTerms(double[] coeffs, string[] names)
+        {
+            var terms = new List<string>();
+            for (int j = 0; j < coeffs.Length; j++)
+            {
+                double c = coeffs[j];
+                if (Math.Abs(c) < MValue.Epsilon) continue;
+
+                bool isFirst = terms.Count == 0;
+                string varPart = names[j];
+
+                if (isFirst)
+                {
+                    if (Math.Abs(c - 1) < MValue.Epsilon) terms.Add(varPart);
+                    else if (Math.Abs(c + 1) < MValue.Epsilon) terms.Add($"-{varPart}");
+                    else terms.Add($"{FormatNum(c)}{varPart}");
+                }
+                else
+                {
+                    if (Math.Abs(c - 1) < MValue.Epsilon) terms.Add($"+ {varPart}");
+                    else if (Math.Abs(c + 1) < MValue.Epsilon) terms.Add($"- {varPart}");
+                    else if (c > 0) terms.Add($"+ {FormatNum(c)}{varPart}");
+                    else terms.Add($"- {FormatNum(-c)}{varPart}");
+                }
+            }
+
+            return terms.Count > 0 ? string.Join(" ", terms) : "0";
+        }
+
+        private static string FormatNum(double v)
+        {
+            if (Math.Abs(v) < MValue.Epsilon) return "0";
+            return v == Math.Floor(v) ? ((long)v).ToString() : v.ToString("G6");
+        }
+
+        private static string SignToString(ConstraintSign sign) => sign switch
+        {
+            ConstraintSign.LessThanOrEqual => "≤",
+            ConstraintSign.GreaterThanOrEqual => "≥",
+            _ => "="
+        };
     }
 }

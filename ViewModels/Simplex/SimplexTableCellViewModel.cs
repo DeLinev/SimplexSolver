@@ -9,24 +9,27 @@
         public bool IsHeader { get; init; }
         public bool IsEstimateRow { get; init; }
 
-        public Color Background => IsPivotElement
-            ? Color.FromArgb("#FFE066")
-            : IsHeader
-                ? Color.FromArgb("#3A86FF")
-                : IsEstimateRow
-                    ? Color.FromArgb("#EBF3FF")
-                    : Colors.Transparent;
+        public Color Background => this switch
+        {
+            { IsPivotElement: true } => Color.FromArgb("#F68048"),
+            { IsHeader: true } => Color.FromArgb("#355872"),
+            { IsEstimateRow: true } => Color.FromArgb("#A7BECF"),
+            { IsEnteringColumn: true } => Color.FromArgb("#d4ebfc"),
+            _ => Colors.Transparent
+        };
 
-        public Color TextColor => IsHeader
-            ? Colors.White
-            : IsPivotElement
-                ? Color.FromArgb("#92400E")
-                : Color.FromArgb("#111827");
+        public Color TextColor => this switch
+        {
+            { IsHeader: true } => Colors.White,
+            { IsPivotElement: true } => Colors.White,
+            _ => Color.FromArgb("#111827")
+        };
 
-        public FontAttributes FontWeight =>
-            IsHeader || IsEstimateRow || IsPivotElement
-                ? FontAttributes.Bold
-                : FontAttributes.None;
+        public FontAttributes FontWeight => this switch
+        {
+            { IsHeader: true } or { IsEstimateRow: true } or { IsPivotElement: true } => FontAttributes.Bold,
+            _ => FontAttributes.None
+        };
 
     }
 }

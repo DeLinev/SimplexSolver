@@ -6,7 +6,7 @@
         public bool IsLeavingRow { get; set; }
 
         public Color RowBackground => IsLeavingRow
-        ? Color.FromArgb("#F0FDF4")
-        : Colors.Transparent;
+            ? Color.FromArgb("#d4ebfc")
+            : Colors.Transparent;
     }
 }

@@ -208,19 +208,19 @@
             <Border Style="{StaticResource Card}" IsEnabled="{Binding IsNotBusy}">
                 <VerticalStackLayout Spacing="10">
 
-                    <Grid ColumnDefinitions="*,Auto">
+                    <!--<Grid ColumnDefinitions="*,Auto">-->
                         <Label Grid.Column="0"
                                Text="📋  Система обмежень"
                                Style="{StaticResource SectionTitle}"
                                Margin="0" />
                         
-                        <Label Grid.Column="1"
+                        <!--<Label Grid.Column="1"
                                Text="xᵢ ≥ 0"
                                FontSize="13"
                                FontAttributes="Italic"
                                TextColor="{StaticResource TextSecondary}"
-                               VerticalOptions="Center" />      
-                    </Grid>
+                               VerticalOptions="Center" />-->      
+                    <!--</Grid>-->
 
                     <Grid ColumnDefinitions="Auto,*" ColumnSpacing="4">
 
@@ -304,7 +304,26 @@
                         </ScrollView>
                     </Grid>
 
-                </VerticalStackLayout>
+                        <Border BackgroundColor="{AppThemeBinding Light=#EFF6FF, Dark=#0D2744}"
+                                Stroke="{StaticResource Primary}"
+                                StrokeThickness="1"
+                                StrokeShape="RoundRectangle 8"
+                                Padding="12,8"> 
+                            <HorizontalStackLayout Spacing="8">
+                                <Label Text="де"
+                                       FontSize="14"
+                                       FontAttributes="Italic"
+                                       TextColor="{StaticResource TextSecondary}"
+                                       VerticalOptions="Center" />
+                                <Label Text="x₁, x₂, ..., xₙ ≥ 0"
+                                       FontSize="15"
+                                       FontAttributes="Bold"
+                                       TextColor="{StaticResource Primary}"
+                                       VerticalOptions="Center" />  
+                            </HorizontalStackLayout>
+                        </Border>
+                    
+                    </VerticalStackLayout>
             </Border>
 
             <!-- ─────────────────────────────────────────────────────────
@@ -367,7 +386,7 @@
             </Border>
 
             <!-- ─────────────────────────────────────────────────────────
-                 CARD 5 — SOLUTION STEPS & OPTIMAL SOLUTION
+                 SOLUTION STEPS & OPTIMAL SOLUTION
                  ───────────────────────────────────────────────────────── -->
             <Border Style="{StaticResource Card}"
                     IsVisible="{Binding IsSolutionVisible}"
@@ -376,11 +395,11 @@
                     <Label Text="📊  Результат"
                            Style="{StaticResource SectionTitle}" />
                     <Label Text="{Binding OptimalValue}"
-                           FontSize="18"
+                           FontSize="20"
                            FontAttributes="Bold"
                            TextColor="{Binding SolutionStatusColor}" />
                     <Label Text="{Binding OptimalVariables}"
-                           FontSize="14"
+                           FontSize="18"
                            TextColor="{StaticResource TextSecondary}"
                            IsVisible="{Binding OptimalVariables,
                                Converter={StaticResource StringToBoolConverter}}" />
@@ -410,22 +429,46 @@
                             <!-- Step header -->
                             <HorizontalStackLayout Spacing="8">
                                 <Label Text="{Binding TypeIcon}"
-                               FontSize="16"
-                               VerticalOptions="Center" />
+                                       FontSize="15"
+                                       FontAttributes="Bold"
+                                       VerticalOptions="Center" />
                                 <Label Text="{Binding Title}"
-                               FontAttributes="Bold"
-                               FontSize="14"
-                               TextColor="{Binding TitleColor}"
-                               VerticalOptions="Center" />
+                                       FontAttributes="Bold"
+                                       FontSize="14"
+                                       TextColor="{Binding TitleColor}"
+                                       VerticalOptions="Center" />  
                             </HorizontalStackLayout>
 
                             <!-- Description -->
                             <Label Text="{Binding Description}"
-                           FontSize="12"
-                           LineBreakMode="WordWrap"
-                           TextColor="{StaticResource TextSecondary}"
-                           IsVisible="{Binding Description,
+                               FontSize="12"
+                               LineBreakMode="WordWrap"
+                               TextColor="{StaticResource TextSecondary}"
+                               IsVisible="{Binding Description,
                                Converter={StaticResource StringToBoolConverter}}" />
+                            
+                            <!-- Equations -->
+                            <Border IsVisible="{Binding HasEquations}"
+                                    BackgroundColor="{AppThemeBinding Light=#F8FAFC, Dark=#0F2132}"
+                                    Stroke="{AppThemeBinding Light={StaticResource BorderLight}, Dark={StaticResource BorderDark}}"
+                                    StrokeThickness="1"
+                                    StrokeShape="RoundRectangle 8"
+                                    Padding="12,8">
+                                <VerticalStackLayout
+                                    Spacing="4"
+                                    BindableLayout.ItemsSource="{Binding Equations}">
+                                    <BindableLayout.ItemTemplate>
+                                        <DataTemplate x:DataType="x:String">
+                                            <Label Text="{Binding .}"
+                                                   FontFamily="Courier New"
+                                                   FontSize="15"
+                                                   TextColor="{AppThemeBinding
+                                                       Light={StaticResource TextPrimary},
+                                                       Dark={StaticResource TextPrimaryDark}}" />   
+                                        </DataTemplate>
+                                    </BindableLayout.ItemTemplate>
+                                </VerticalStackLayout>
+                            </Border>
 
                             <!-- Table -->
                             <ScrollView Orientation="Horizontal"
@@ -447,13 +490,13 @@
                                                     <DataTemplate x:DataType="solution:SimplexTableCellViewModel">
 
                                                         <Label Text="{Binding Text}"
-                                                           WidthRequest="80"          
+                                                           WidthRequest="80"
                                                            HeightRequest="36"
                                                            BackgroundColor="{Binding Background}"
                                                            TextColor="{Binding TextColor}"
                                                            FontAttributes="{Binding FontWeight}"
-                                                           FontSize="13" 
-                                                           HorizontalOptions="Fill"   
+                                                           FontSize="15"
+                                                           HorizontalOptions="Fill"
                                                            VerticalOptions="Fill"
                                                            HorizontalTextAlignment="Center"
                                                            VerticalTextAlignment="Center"
