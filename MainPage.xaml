@@ -27,13 +27,13 @@
                  HEADER
                  ───────────────────────────────────────────────────────── -->
             <VerticalStackLayout Spacing="4" Margin="0,0,0,20">
-                <Label Text="Симплекс Метод"
+                <Label Text="Симплекс-Метод Калькулятор"
                        FontSize="26"
                        FontAttributes="Bold"
                        HorizontalOptions="Center"
                        TextColor="{StaticResource Primary}" />
                 <Label Text="Розв'язання задач лінійного програмування"
-                       FontSize="13"
+                       FontSize="15"
                        HorizontalOptions="Center"
                        TextColor="{StaticResource TextSecondary}" />
             </VerticalStackLayout>
@@ -58,7 +58,7 @@
                             <Picker Grid.Column="0"
                                     Style="{StaticResource CompactPicker}"
                                     ItemsSource="{Binding VariableCountOptions}"
-                                    SelectedItem="{Binding SelectedVariableOption, Mode=TwoWay}"
+                                    SelectedItem="{Binding SelectedVariableOption}"
                                     Title="Оберіть кількість..." />
 
                             <Border Grid.Column="1"
@@ -208,23 +208,14 @@
             <Border Style="{StaticResource Card}" IsEnabled="{Binding IsNotBusy}">
                 <VerticalStackLayout Spacing="10">
 
-                    <!--<Grid ColumnDefinitions="*,Auto">-->
-                        <Label Grid.Column="0"
-                               Text="📋  Система обмежень"
-                               Style="{StaticResource SectionTitle}"
-                               Margin="0" />
-                        
-                        <!--<Label Grid.Column="1"
-                               Text="xᵢ ≥ 0"
-                               FontSize="13"
-                               FontAttributes="Italic"
-                               TextColor="{StaticResource TextSecondary}"
-                               VerticalOptions="Center" />-->      
-                    <!--</Grid>-->
+                    <Label Grid.Column="0"
+                           Text="📋  Система обмежень"
+                           Style="{StaticResource SectionTitle}"
+                           Margin="0" />
 
                     <Grid ColumnDefinitions="Auto,*" ColumnSpacing="4">
 
-                        <Label Grid.Column="0"
+                        <!--<Label Grid.Column="0"
                                Text="{}{"
                                FontSize="56"
                                FontAttributes="Bold"
@@ -234,11 +225,18 @@
                                HorizontalOptions="Center"
                                VerticalOptions="Center"
                                Padding="0,0,0,10"
-                               Margin="0,0,4,0" />
+                               Margin="0,0,4,0" />-->
+                        
+                        <controls:CurlyBraceView
+                            Grid.Column="0"
+                            WidthRequest="28"
+                            VerticalOptions="Fill"
+                            BraceColor="{StaticResource Primary}"
+                            StrokeWidth="2.5" />
 
                         <ScrollView Grid.Column="1" 
                                     Orientation="Both" 
-                                    VerticalOptions="Center"
+                                    VerticalOptions="Fill"
                                     MaximumHeightRequest="300"> 
 
                             <VerticalStackLayout BindableLayout.ItemsSource="{Binding Constraints}"
@@ -304,24 +302,24 @@
                         </ScrollView>
                     </Grid>
 
-                        <Border BackgroundColor="{AppThemeBinding Light=#EFF6FF, Dark=#0D2744}"
-                                Stroke="{StaticResource Primary}"
-                                StrokeThickness="1"
-                                StrokeShape="RoundRectangle 8"
-                                Padding="12,8"> 
-                            <HorizontalStackLayout Spacing="8">
-                                <Label Text="де"
-                                       FontSize="14"
-                                       FontAttributes="Italic"
-                                       TextColor="{StaticResource TextSecondary}"
-                                       VerticalOptions="Center" />
-                                <Label Text="x₁, x₂, ..., xₙ ≥ 0"
-                                       FontSize="15"
-                                       FontAttributes="Bold"
-                                       TextColor="{StaticResource Primary}"
-                                       VerticalOptions="Center" />  
-                            </HorizontalStackLayout>
-                        </Border>
+                    <Border BackgroundColor="{AppThemeBinding Light=#EFF6FF, Dark=#0D2744}"
+                            Stroke="{StaticResource Primary}"
+                            StrokeThickness="1"
+                            StrokeShape="RoundRectangle 8"
+                            Padding="12,8"> 
+                        <HorizontalStackLayout Spacing="8">
+                            <Label Text="де"
+                                   FontSize="14"
+                                   FontAttributes="Italic"
+                                   TextColor="{StaticResource TextSecondary}"
+                                   VerticalOptions="Center" />
+                            <Label Text="x₁, x₂, ..., xₙ ≥ 0"
+                                   FontSize="15"
+                                   FontAttributes="Bold"
+                                   TextColor="{StaticResource Primary}"
+                                   VerticalOptions="Center" />  
+                        </HorizontalStackLayout>
+                    </Border>
                     
                     </VerticalStackLayout>
             </Border>
@@ -408,6 +406,7 @@
 
             <BoxView Style="{StaticResource Divider}" 
                      Color="{StaticResource Gray200}"
+                     IsVisible="{Binding IsSolutionVisible}"
                      HeightRequest="1.5"
                      WidthRequest="100"
                      Margin="0,20"/>
@@ -422,7 +421,7 @@
 
         <CollectionView.ItemTemplate>
             <DataTemplate x:DataType="solution:SolutionStepViewModel">
-                <Grid Padding="16,0,16,12">
+                <Grid Padding="16,0,16,7">
                     <Border Style="{StaticResource Card}" >
                         <VerticalStackLayout Spacing="10" >
 
@@ -441,7 +440,7 @@
 
                             <!-- Description -->
                             <Label Text="{Binding Description}"
-                               FontSize="12"
+                               FontSize="14"
                                LineBreakMode="WordWrap"
                                TextColor="{StaticResource TextSecondary}"
                                IsVisible="{Binding Description,
@@ -490,17 +489,17 @@
                                                     <DataTemplate x:DataType="solution:SimplexTableCellViewModel">
 
                                                         <Label Text="{Binding Text}"
-                                                           WidthRequest="80"
-                                                           HeightRequest="36"
-                                                           BackgroundColor="{Binding Background}"
-                                                           TextColor="{Binding TextColor}"
-                                                           FontAttributes="{Binding FontWeight}"
-                                                           FontSize="15"
-                                                           HorizontalOptions="Fill"
-                                                           VerticalOptions="Fill"
-                                                           HorizontalTextAlignment="Center"
-                                                           VerticalTextAlignment="Center"
-                                                           Padding="0,0" />
+                                                               WidthRequest="80"
+                                                               HeightRequest="36"
+                                                               BackgroundColor="{Binding Background}"
+                                                               TextColor="{Binding TextColor}"
+                                                               FontAttributes="{Binding FontWeight}"
+                                                               FontSize="15"
+                                                               HorizontalOptions="Fill"
+                                                               VerticalOptions="Fill"
+                                                               HorizontalTextAlignment="Center"
+                                                               VerticalTextAlignment="Center"
+                                                               Padding="0,0" />
 
                                                     </DataTemplate>
                                                 </BindableLayout.ItemTemplate>
@@ -516,7 +515,109 @@
                 </Grid>
             </DataTemplate>
         </CollectionView.ItemTemplate>
-        
+
+        <CollectionView.Footer>
+            <VerticalStackLayout Padding="16,0,16,30" Spacing="0">
+
+                <Border IsVisible="{Binding IsSolutionVisible}"
+                        BackgroundColor="{AppThemeBinding Light=#F8FAFC, Dark=#162030}"
+                        Stroke="{AppThemeBinding Light={StaticResource BorderLight},
+                                                 Dark={StaticResource BorderDark}}"
+                        StrokeThickness="1"
+                        StrokeShape="RoundRectangle 12"
+                        Padding="14,12"
+                        Margin="0,0,0,16">
+                    <VerticalStackLayout Spacing="10">
+
+                        <Label Text="Позначення змінних"
+                               FontSize="13"
+                               FontAttributes="Bold"
+                               TextColor="{StaticResource TextSecondary}" />
+
+                        <!-- x -->
+                        <HorizontalStackLayout Spacing="10">
+                            <Border WidthRequest="32"
+                                    HeightRequest="24"
+                                    BackgroundColor="{StaticResource PrimaryLight}"
+                                    Stroke="{StaticResource Primary}"
+                                    StrokeThickness="1"
+                                    StrokeShape="RoundRectangle 5"
+                                    HorizontalOptions="Start">
+                                <Label Text="xᵢ"
+                                       FontSize="12"
+                                       FontAttributes="Bold"
+                                       TextColor="{StaticResource Primary}"
+                                       HorizontalOptions="Center"
+                                       VerticalOptions="Fill" />
+                            </Border>
+                            <Label Text="Оригінальні змінні задачі"
+                                   FontSize="13"
+                                   TextColor="{AppThemeBinding Light={StaticResource TextPrimary},
+                                                               Dark={StaticResource TextPrimaryDark}}"
+                                   VerticalOptions="Center" />
+                        </HorizontalStackLayout>
+
+                        <!-- s -->
+                        <HorizontalStackLayout Spacing="10">
+                            <Border WidthRequest="32"
+                                    HeightRequest="24"
+                                    BackgroundColor="#F0FDF4"
+                                    Stroke="#10B981"
+                                    StrokeThickness="1"
+                                    StrokeShape="RoundRectangle 5"
+                                    HorizontalOptions="Start">
+                                <Label Text="sᵢ"
+                                           FontSize="12"
+                                           FontAttributes="Bold"
+                                           TextColor="#10B981"
+                                           HorizontalOptions="Center"
+                                           VerticalOptions="Fill" />
+                            </Border>
+                            <VerticalStackLayout Spacing="1" VerticalOptions="Center">
+                                <Label Text="Балансуючі змінні"
+                                       FontSize="13"
+                                       TextColor="{AppThemeBinding Light={StaticResource TextPrimary},
+                                                                   Dark={StaticResource TextPrimaryDark}}" />
+                                <Label Text="Додаються для перетворення нерівностей у рівності (≤ → +sᵢ, ≥ → −sᵢ)"
+                                       FontSize="11"
+                                       TextColor="{StaticResource TextSecondary}" />
+                            </VerticalStackLayout>
+                        </HorizontalStackLayout>
+
+                        <!-- a -->
+                        <HorizontalStackLayout Spacing="10">
+                            <Border WidthRequest="32"
+                                    HeightRequest="24"
+                                    BackgroundColor="#FEF2F2"
+                                    Stroke="{StaticResource Danger}"
+                                    StrokeThickness="1"
+                                    StrokeShape="RoundRectangle 5"
+                                    HorizontalOptions="Start"
+                                    >
+                                <Label Text="aᵢ"
+                                       FontSize="12"
+                                       FontAttributes="Bold"
+                                       TextColor="{StaticResource Danger}"
+                                       HorizontalOptions="Center"
+                                       VerticalOptions="Fill" />
+                            </Border>
+                            <VerticalStackLayout Spacing="1" VerticalOptions="Center">
+                                <Label Text="Штучні змінні (M-метод)"
+                                       FontSize="13"
+                                       TextColor="{AppThemeBinding Light={StaticResource TextPrimary},
+                                                                   Dark={StaticResource TextPrimaryDark}}" />
+                                <Label Text="Додаються для обмежень ≥ та =. Мають великий штрафний коефіцієнт ±M у цільовій функції"
+                                       FontSize="11"
+                                       TextColor="{StaticResource TextSecondary}" />
+                            </VerticalStackLayout>
+                        </HorizontalStackLayout>
+
+                    </VerticalStackLayout>
+                </Border>
+
+                <BoxView HeightRequest="16" Color="Transparent" />
+            </VerticalStackLayout>
+        </CollectionView.Footer>
     </CollectionView>
 
 </ContentPage>

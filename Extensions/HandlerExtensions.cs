@@ -1,4 +1,9 @@
-﻿namespace SimplexMethodApp.Extensions
+﻿using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Input;
+using Microsoft.UI.Xaml.Media;
+
+namespace SimplexMethodApp.Extensions
 {
     public static class HandlerExtensions
     {
@@ -63,6 +68,65 @@
                     };
 #endif
                 }
+            });
+
+            // Scroll Fix
+            Microsoft.Maui.Handlers.ScrollViewHandler.Mapper.AppendToMapping("AdvancedScrollFix", (handler, view) =>
+            {
+#if WINDOWS
+                var scrollViewer = handler.PlatformView;
+                if (scrollViewer == null) return;
+
+                scrollViewer.AddHandler(UIElement.PointerWheelChangedEvent, new PointerEventHandler((sender, e) =>
+                {
+                    var pointerPoint = e.GetCurrentPoint(null);
+                    var delta = pointerPoint.Properties.MouseWheelDelta;
+                    var isShiftPressed = e.KeyModifiers.HasFlag(Windows.System.VirtualKeyModifiers.Shift);
+
+                    DependencyObject parent = VisualTreeHelper.GetParent(scrollViewer);
+                    while (parent != null && !(parent is ScrollViewer))
+                    {
+                        parent = VisualTreeHelper.GetParent(parent);
+                    }
+
+                    if (parent is ScrollViewer parentScrollViewer)
+                    {
+                        if (view.Orientation == ScrollOrientation.Horizontal)
+                        {
+                            if (isShiftPressed)
+                            {
+                                scrollViewer.ChangeView(scrollViewer.HorizontalOffset - delta, null, null);
+                                e.Handled = true;
+                            }
+                            else
+                            {
+                                parentScrollViewer.ChangeView(null, parentScrollViewer.VerticalOffset - delta, null);
+                                e.Handled = true;
+                            }
+                        }
+
+                        else if (view.Orientation == ScrollOrientation.Both || view.Orientation == ScrollOrientation.Vertical)
+                        {
+                            if (!isShiftPressed)
+                            {
+                                bool isAtTop = scrollViewer.VerticalOffset <= 0;
+                                bool isAtBottom = scrollViewer.VerticalOffset >= (scrollViewer.ScrollableHeight - 1.0);
+
+                                if ((delta > 0 && isAtTop) || (delta < 0 && isAtBottom))
+                                {
+                                    parentScrollViewer.ChangeView(null, parentScrollViewer.VerticalOffset - delta, null);
+                                    e.Handled = true;
+                                }
+                            }
+                            else
+                            {
+                                scrollViewer.ChangeView(scrollViewer.HorizontalOffset - delta, null, null);
+                                e.Handled = true;
+                            }
+                        }
+                    }
+                }), true);
+#endif
             });
 
             return builder;
