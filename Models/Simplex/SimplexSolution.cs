@@ -6,7 +6,7 @@ namespace SimplexMethodApp.Models.Simplex
     {
         public SolutionStatus Status { get; init; }
         public List<SimplexStep> Steps { get; init; }
-        public double? OptimalValue { get; init; }
-        public Dictionary<string, double> VariableValues { get; init; }
+        public Fraction? OptimalValue { get; init; }
+        public Dictionary<string, Fraction> VariableValues { get; init; }
     }
 }

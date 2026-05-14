@@ -5,17 +5,23 @@
     /// </summary>
     public readonly struct MValue
     {
-        public double Regular { get; init; }
-        public double MCoefficient { get; init; }
+        public Fraction Regular { get; init; }
+        public Fraction MCoefficient { get; init; }
 
         public static readonly double Epsilon = 1e-9;
 
-        public static readonly MValue Zero = new(0, 0);
+        public static readonly MValue Zero = new(Fraction.Zero, Fraction.Zero);
 
-        public MValue(double regular, double mCoefficient)
+        public MValue(Fraction regular, Fraction mCoefficient)
         {
             Regular = regular;
             MCoefficient = mCoefficient;
+        }
+
+        public MValue(Fraction regular)
+        {
+            Regular = regular;
+            MCoefficient = Fraction.Zero;
         }
 
         public static MValue operator +(MValue a, MValue b)
@@ -24,13 +30,13 @@
         public static MValue operator -(MValue a, MValue b)
             => new(a.Regular - b.Regular, a.MCoefficient - b.MCoefficient);
 
-        public static MValue operator *(MValue a, double scalar)
+        public static MValue operator *(MValue a, Fraction scalar)
             => new(a.Regular * scalar, a.MCoefficient * scalar);
 
-        public static MValue operator *(double scalar, MValue a)
+        public static MValue operator *(Fraction scalar, MValue a)
             => a * scalar;
 
-        public static MValue operator /(MValue a, double scalar)
+        public static MValue operator /(MValue a, Fraction scalar)
             => new(a.Regular / scalar, a.MCoefficient / scalar);
 
         public static MValue operator -(MValue a)
@@ -38,42 +44,38 @@
 
         public static bool operator <(MValue a, MValue b)
         {
-            double diffM = a.MCoefficient - b.MCoefficient;
-            if (Math.Abs(diffM) > Epsilon) return diffM < 0;
-            return a.Regular < b.Regular - Epsilon;
+            Fraction diffM = a.MCoefficient - b.MCoefficient;
+            if (!diffM.IsZero) return diffM.IsNegative;
+            return (a.Regular - b.Regular).IsNegative;
         }
 
         public static bool operator >(MValue a, MValue b)
             => b < a;
 
-        public static implicit operator MValue(double value)
-            => new(value, 0);
+        //public static implicit operator MValue(double value)
+        //    => new(Fraction.FromDouble(value));
 
-        public bool IsNegative 
-            => this < Zero;
-        public bool IsZero 
-            => Math.Abs(Regular) < Epsilon && Math.Abs(MCoefficient) < Epsilon;
+        public static implicit operator MValue(Fraction f) => new(f);
+        public static implicit operator MValue(int v) => new(new Fraction(v));
 
-        public override string ToString() => ToDisplayString();
+        public bool IsZero => Regular.IsZero && MCoefficient.IsZero;
+        public bool IsNegative => this < Zero;
 
-        public string ToDisplayString()
+        public override string ToString()
         {
-            if (Math.Abs(Regular) < Epsilon)
+            if (MCoefficient.IsZero) return Regular.ToString();
+            if (Regular.IsZero)
             {
-                if (Math.Abs(MCoefficient) < Epsilon) return "0";
-                if (Math.Abs(MCoefficient - 1) < Epsilon) return "M";
-                if (Math.Abs(MCoefficient + 1) < Epsilon) return "-M";
-                return $"{FormatNumber(MCoefficient)}M";
+                if (MCoefficient == Fraction.One) return "M";
+                if (MCoefficient == -Fraction.One) return "-M";
+                return $"{MCoefficient}M";
             }
 
-            if (Math.Abs(MCoefficient) < Epsilon)
-                return FormatNumber(Regular);
+            string mPart = MCoefficient.IsNegative
+                ? $" - {(-MCoefficient)}M"
+                : $" + {MCoefficient}M";
 
-            string mPart = MCoefficient > 0
-                ? $"+{(Math.Abs(MCoefficient - 1) < Epsilon ? "" : FormatNumber(MCoefficient))}M"
-                : $"-{(Math.Abs(MCoefficient + 1) < Epsilon ? "" : FormatNumber(-MCoefficient))}M";
-
-            return $"{FormatNumber(Regular)}{mPart}";
+            return $"{Regular}{mPart}";
         }
 
         private static string FormatNumber(double v)

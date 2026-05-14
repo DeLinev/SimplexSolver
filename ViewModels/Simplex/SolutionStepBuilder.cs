@@ -44,7 +44,7 @@ namespace SimplexMethodApp.ViewModels.Simplex
                 Cell("")
             };
             for (int j = 0; j < varCount; j++)
-                objCells.Add(Cell(table.Variables[j].Coefficient.ToDisplayString(),
+                objCells.Add(Cell(table.Variables[j].Coefficient.ToString(),
                                   isEntering: j == table.EnteringColumnIndex));
             objCells.Add(Cell(""));
             rows.Add(new SimplexTableRowViewModel { Cells = objCells });
@@ -58,8 +58,8 @@ namespace SimplexMethodApp.ViewModels.Simplex
                 var cells = new List<SimplexTableCellViewModel>
                 {
                     Cell(basisName, isLeaving: isLeaving),
-                    Cell(table.Cb[i].ToDisplayString(), isLeaving: isLeaving),
-                    Cell(FormatDouble(table.Plan[i]), isLeaving: isLeaving)
+                    Cell(table.Cb[i].ToString(), isLeaving: isLeaving),
+                    Cell(table.Plan[i].ToString(), isLeaving: isLeaving)
                 };
 
                 for (int j = 0; j < varCount; j++)
@@ -67,7 +67,7 @@ namespace SimplexMethodApp.ViewModels.Simplex
                     bool isPivot = isLeaving && j == table.EnteringColumnIndex;
                     cells.Add(new SimplexTableCellViewModel
                     {
-                        Text = FormatDouble(table.Matrix[i, j]),
+                        Text = table.Matrix[i, j].ToString(),
                         IsPivotElement = isPivot,
                         IsEnteringColumn = j == table.EnteringColumnIndex,
                         IsLeavingRow = isLeaving
@@ -75,7 +75,7 @@ namespace SimplexMethodApp.ViewModels.Simplex
                 }
 
                 string qText = table.QValues[i].HasValue
-                    ? FormatDouble(table.QValues[i]!.Value)
+                    ? table.QValues[i]!.Value.ToString()  // Fraction.ToString() вже є
                     : "-";
                 cells.Add(Cell(qText, isLeaving: isLeaving));
 
@@ -86,10 +86,10 @@ namespace SimplexMethodApp.ViewModels.Simplex
             {
                 Cell("Δⱼ",  isEstimate: true),
                 Cell("",     isEstimate: true),
-                Cell(table.ObjectiveFunctionValue.ToDisplayString(), isEstimate: true)
+                Cell(table.ObjectiveFunctionValue.ToString(), isEstimate: true)
             };
             for (int j = 0; j < varCount; j++)
-                estimateCells.Add(Cell(table.ReducedCosts[j].ToDisplayString(),
+                estimateCells.Add(Cell(table.ReducedCosts[j].ToString(),
                                        isEstimate: true,
                                        isEntering: j == table.EnteringColumnIndex));
             estimateCells.Add(Cell("", isEstimate: true));
@@ -111,15 +111,5 @@ namespace SimplexMethodApp.ViewModels.Simplex
             IsEnteringColumn = isEntering,
             IsLeavingRow = isLeaving
         };
-
-        private static string FormatDouble(double v)
-        {
-            if (Math.Abs(v) < MValue.Epsilon) return "0";
-
-            return v == Math.Floor(v)
-                ? ((long)v).ToString()
-                : v.ToString("G6");
-        }
-
     }
 }

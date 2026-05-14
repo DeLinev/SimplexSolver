@@ -50,7 +50,8 @@ namespace SimplexMethodApp.Extensions
                                       args.Key == (Windows.System.VirtualKey)189 ||
                                       args.Key == (Windows.System.VirtualKey)190 ||
                                       args.Key == (Windows.System.VirtualKey)188 ||
-                                      args.Key == Windows.System.VirtualKey.Decimal;
+                                      args.Key == Windows.System.VirtualKey.Decimal ||
+                                      args.Key == (Windows.System.VirtualKey)191;
 
                         bool isShiftDown = Microsoft.UI.Input.InputKeyboardSource.GetKeyStateForCurrentThread(Windows.System.VirtualKey.Shift)
                                            .HasFlag(Windows.UI.Core.CoreVirtualKeyStates.Down);

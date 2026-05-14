@@ -29,7 +29,7 @@ namespace SimplexMethodApp.Services
                 {
                     table.EnteringColumnIndex = null;
                     table.LeavingRowIndex = null;
-                    table.QValues = new double?[table.Plan.Length];
+                    table.QValues = new Fraction?[table.Plan.Length];
 
                     if (HasArtificialVariablesInBasis(table))
                     {
@@ -66,7 +66,7 @@ namespace SimplexMethodApp.Services
                     }
 
                     var solution = ExtractSolution(table);
-                    double optimalValue = table.ObjectiveFunctionValue.Regular;
+                    var optimalValue = table.ObjectiveFunctionValue.Regular;
 
                     Steps.Add(new SimplexStep
                     {
@@ -98,7 +98,7 @@ namespace SimplexMethodApp.Services
                 {
                     table.EnteringColumnIndex = enteringCol;
                     table.LeavingRowIndex = null;
-                    table.QValues = new double?[table.Plan.Length];
+                    table.QValues = new Fraction?[table.Plan.Length];
 
                     Steps.Add(new SimplexStep
                     {
@@ -140,9 +140,9 @@ namespace SimplexMethodApp.Services
         {
             bool hasNegativeRhs = false;
 
-            var newRhs = (double[])problem.RightHandSideValues.Clone();
+            var newRhs = (Fraction[])problem.RightHandSideValues.Clone();
             var newSigns = (ConstraintSign[])problem.ConstraintSigns.Clone();
-            var newCoeffs = (double[,])problem.ConstraintCoefficients.Clone();
+            var newCoeffs = (Fraction[,])problem.ConstraintCoefficients.Clone();
 
             for (int i = 0; i < problem.ConstraintCount; i++)
             {
@@ -208,11 +208,11 @@ namespace SimplexMethodApp.Services
                 Variables = new List<SimplexVariable>(),
                 BasicVariables = new List<SimplexVariable>(),
                 Cb = new MValue[n],
-                Plan = new double[n],
-                Matrix = new double[n, totalCols],
+                Plan = new Fraction[n],
+                Matrix = new Fraction[n, totalCols],
                 ObjectiveFunctionValue = MValue.Zero,
                 ReducedCosts = new MValue[totalCols],
-                QValues = new double?[n]
+                QValues = new Fraction?[n]
             };
 
             for (int j = 0; j < origCols; j++)
@@ -254,7 +254,7 @@ namespace SimplexMethodApp.Services
                     };
                     slackVariables.Add(slackVar);
 
-                    simplexTable.Matrix[i, origCols + currentSlackIndex] = 1.0;
+                    simplexTable.Matrix[i, origCols + currentSlackIndex] = 1;
 
                     simplexTable.BasicVariables.Add(slackVar);
                     simplexTable.Cb[i] = slackVar.Coefficient;
@@ -271,7 +271,7 @@ namespace SimplexMethodApp.Services
                         Coefficient = MValue.Zero
                     };
                     slackVariables.Add(surplusVar);
-                    simplexTable.Matrix[i, origCols + currentSlackIndex] = -1.0;
+                    simplexTable.Matrix[i, origCols + currentSlackIndex] = -1;
                     currentSlackIndex++;
 
                     var artifVar = new SimplexVariable
@@ -282,7 +282,7 @@ namespace SimplexMethodApp.Services
                         Coefficient = new MValue(0, -optSign)
                     };
                     artifVariables.Add(artifVar);
-                    simplexTable.Matrix[i, origCols + slackCols + currentArtifIndex] = 1.0;
+                    simplexTable.Matrix[i, origCols + slackCols + currentArtifIndex] = 1;
 
                     simplexTable.BasicVariables.Add(artifVar);
                     simplexTable.Cb[i] = artifVar.Coefficient;
@@ -299,7 +299,7 @@ namespace SimplexMethodApp.Services
                         Coefficient = new MValue(0, -optSign)
                     };
                     artifVariables.Add(artifVar);
-                    simplexTable.Matrix[i, origCols + slackCols + currentArtifIndex] = 1.0;
+                    simplexTable.Matrix[i, origCols + slackCols + currentArtifIndex] = 1;
 
                     simplexTable.BasicVariables.Add(artifVar);
                     simplexTable.Cb[i] = artifVar.Coefficient;
@@ -382,15 +382,15 @@ namespace SimplexMethodApp.Services
         private int? FindLeavingRow(SimplexTable table, int enteringCol)
         {
             int? bestRowIndex = null;
-            double? minRatio = null;
+            Fraction minRatio = Fraction.Zero;
 
             for (int row = 0; row < table.Matrix.GetLength(0); row++)
             {
                 table.QValues[row] = null;
 
-                if (table.Matrix[row, enteringCol] > MValue.Epsilon)
+                if (table.Matrix[row, enteringCol] > Fraction.Zero)
                 {
-                    double ratio = table.Plan[row] / table.Matrix[row, enteringCol];
+                    Fraction ratio = table.Plan[row] / table.Matrix[row, enteringCol];
                     table.QValues[row] = ratio;
 
                     if (bestRowIndex == null)
@@ -398,12 +398,12 @@ namespace SimplexMethodApp.Services
                         minRatio = ratio;
                         bestRowIndex = row;
                     }
-                    else if (ratio < minRatio.Value - MValue.Epsilon)
+                    else if (ratio < minRatio)
                     {
                         minRatio = ratio;
                         bestRowIndex = row;
                     }
-                    else if (Math.Abs(ratio - minRatio.Value) <= MValue.Epsilon)
+                    else if (ratio == minRatio)
                     {
                         var currentVar = table.BasicVariables[row];
                         var bestVar = table.BasicVariables[bestRowIndex.Value];
@@ -412,9 +412,7 @@ namespace SimplexMethodApp.Services
                         int bestIndex = table.Variables.IndexOf(bestVar);
 
                         if (currentIndex < bestIndex)
-                        {
                             bestRowIndex = row;
-                        }
                     }
                 }
             }
@@ -427,7 +425,7 @@ namespace SimplexMethodApp.Services
             for (int i = 0; i < table.BasicVariables.Count; i++)
             {
                 if (table.BasicVariables[i].Type == VariableType.Artificial 
-                    && table.Plan[i] > MValue.Epsilon)
+                    && table.Plan[i] > Fraction.Zero)
                 {
                     return true;
                 }
@@ -444,10 +442,10 @@ namespace SimplexMethodApp.Services
                 BasicVariables = [.. table.BasicVariables],
 
                 Cb = table.Cb != null ? (MValue[])table.Cb.Clone() : Array.Empty<MValue>(),
-                Plan = table.Plan != null ? (double[])table.Plan.Clone() : Array.Empty<double>(),
-                Matrix = table.Matrix != null ? (double[,])table.Matrix.Clone() : new double[0, 0],
+                Plan = table.Plan != null ? (Fraction[])table.Plan.Clone() : Array.Empty<Fraction>(),
+                Matrix = table.Matrix != null ? (Fraction[,])table.Matrix.Clone() : new Fraction[0, 0],
                 ReducedCosts = table.ReducedCosts != null ? (MValue[])table.ReducedCosts.Clone() : Array.Empty<MValue>(),
-                QValues = table.QValues != null ? (double?[])table.QValues.Clone() : Array.Empty<double?>(),
+                QValues = table.QValues != null ? (Fraction?[])table.QValues.Clone() : Array.Empty<Fraction?>(),
 
                 ObjectiveFunctionValue = table.ObjectiveFunctionValue,
                 EnteringColumnIndex = table.EnteringColumnIndex,
@@ -455,9 +453,9 @@ namespace SimplexMethodApp.Services
             };
         }
 
-        private Dictionary<string, double> ExtractSolution(SimplexTable table)
+        private Dictionary<string, Fraction> ExtractSolution(SimplexTable table)
         {
-            var solution = new Dictionary<string, double>();
+            var solution = new Dictionary<string, Fraction>();
 
             foreach (var variable in table.Variables)
             {
@@ -471,7 +469,7 @@ namespace SimplexMethodApp.Services
                     }
                     else
                     {
-                        solution.Add(variable.Name, 0.0);
+                        solution.Add(variable.Name, Fraction.Zero);
                     }
                 }
             }
@@ -481,7 +479,7 @@ namespace SimplexMethodApp.Services
 
         private void Pivot(SimplexTable table, int enteringCol, int leavingRow)
         {
-            double pivotValue = table.Matrix[leavingRow, enteringCol];
+            var pivotValue = table.Matrix[leavingRow, enteringCol];
             for (int j = 0; j < table.Matrix.GetLength(1); j++)
             {
                 table.Matrix[leavingRow, j] /= pivotValue;
@@ -492,7 +490,7 @@ namespace SimplexMethodApp.Services
             {
                 if (i != leavingRow)
                 {
-                    double factor = table.Matrix[i, enteringCol];
+                    var factor = table.Matrix[i, enteringCol];
                     for (int j = 0; j < table.Matrix.GetLength(1); j++)
                     {
                         table.Matrix[i, j] -= (factor * table.Matrix[leavingRow, j]);
@@ -523,7 +521,7 @@ namespace SimplexMethodApp.Services
                 var varNames = Enumerable.Range(1, problem.VariableCount)
                     .Select(j => $"x{SubscriptConverter.ToSubscript(j)}").ToArray();
                 string sign = SignToString(problem.ConstraintSigns[i]);
-                string rhs = FormatNum(problem.RightHandSideValues[i]);
+                string rhs = problem.RightHandSideValues[i].ToString();
 
                 lines.Add($"{BuildTerms(coeffs, varNames)} {sign} {rhs}");
             }
@@ -545,7 +543,7 @@ namespace SimplexMethodApp.Services
                 var rowCoeffs = Enumerable.Range(0, table.Variables.Count)
                     .Select(j => table.Matrix[i, j])
                     .ToArray();
-                string rhs = FormatNum(table.Plan[i]);
+                string rhs = table.Plan[i].ToString();
                 lines.Add($"{BuildTerms(rowCoeffs, varNames)} = {rhs}");
             }
 
@@ -553,7 +551,7 @@ namespace SimplexMethodApp.Services
         }
 
 
-        private static string BuildObjectiveLine(double[] coeffs, string[] names, OptimizationType optType)
+        private static string BuildObjectiveLine(Fraction[] coeffs, string[] names, OptimizationType optType)
         {
             string direction = optType == OptimizationType.Maximize ? "max" : "min";
             return $"F(x) = {BuildTerms(coeffs, names)} → {direction}";
@@ -567,7 +565,7 @@ namespace SimplexMethodApp.Services
                 if (coeffs[j].IsZero) continue;
 
                 bool isFirst = terms.Count == 0;
-                string mStr = coeffs[j].ToDisplayString();
+                string mStr = coeffs[j].ToString();
                 string varPart = names[j];
 
                 terms.Add(isFirst ? $"{mStr}{varPart}" : $"+ {mStr}{varPart}");
@@ -578,29 +576,29 @@ namespace SimplexMethodApp.Services
             return $"F(x) = {termsStr} → {direction}";
         }
 
-        private static string BuildTerms(double[] coeffs, string[] names)
+        private static string BuildTerms(Fraction[] coeffs, string[] names)
         {
             var terms = new List<string>();
             for (int j = 0; j < coeffs.Length; j++)
             {
-                double c = coeffs[j];
-                if (Math.Abs(c) < MValue.Epsilon) continue;
+                Fraction c = coeffs[j];
+                if (c.IsZero) continue;
 
                 bool isFirst = terms.Count == 0;
                 string varPart = names[j];
 
                 if (isFirst)
                 {
-                    if (Math.Abs(c - 1) < MValue.Epsilon) terms.Add(varPart);
-                    else if (Math.Abs(c + 1) < MValue.Epsilon) terms.Add($"-{varPart}");
-                    else terms.Add($"{FormatNum(c)}{varPart}");
+                    if (c == Fraction.One) terms.Add(varPart);
+                    else if (c == -Fraction.One) terms.Add($"-{varPart}");
+                    else terms.Add($"{c}{varPart}");
                 }
                 else
                 {
-                    if (Math.Abs(c - 1) < MValue.Epsilon) terms.Add($"+ {varPart}");
-                    else if (Math.Abs(c + 1) < MValue.Epsilon) terms.Add($"- {varPart}");
-                    else if (c > 0) terms.Add($"+ {FormatNum(c)}{varPart}");
-                    else terms.Add($"- {FormatNum(-c)}{varPart}");
+                    if (c == Fraction.One) terms.Add($"+ {varPart}");
+                    else if (c == -Fraction.One) terms.Add($"- {varPart}");
+                    else if (c.IsPositive) terms.Add($"+ {c}{varPart}");
+                    else terms.Add($"- {(-c)}{varPart}");
                 }
             }
 

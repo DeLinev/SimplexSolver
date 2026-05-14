@@ -254,22 +254,18 @@ namespace SimplexMethodApp.ViewModels
             errorMessages = new List<string>();
             problem = null;
 
-            var objectiveCoeffs = new double[ObjectiveCoefficients.Count];
+            var objectiveCoeffs = new Fraction[ObjectiveCoefficients.Count];
             for (int i = 0; i < objectiveCoeffs.Length; i++)
             {
-                if (!double.TryParse(
-                    ObjectiveCoefficients[i].Value, 
-                    System.Globalization.NumberStyles.Any, 
-                    System.Globalization.CultureInfo.InvariantCulture, 
-                    out objectiveCoeffs[i]))
+                if (!Fraction.TryParse(ObjectiveCoefficients[i].Value, out objectiveCoeffs[i]))
                 {
                     errorMessages.Add($"Невірний коефіцієнт цільової функції: x{SubscriptConverter.ToSubscript(i + 1)}");
                 }
             }
 
             var (m, n) = (Constraints.Count, ObjectiveCoefficients.Count); 
-            var constraintCoeffs = new double[m, n];
-            var rgsValues = new double[m];
+            var constraintCoeffs = new Fraction[m, n];
+            var rgsValues = new Fraction[m];
             var signs = new ConstraintSign[m];
 
             for (int i = 0; i < Constraints.Count; i++)
@@ -277,21 +273,13 @@ namespace SimplexMethodApp.ViewModels
                 var row = Constraints[i];
                 for (int j = 0; j < ObjectiveCoefficients.Count; j++)
                 {
-                    if (!double.TryParse(
-                        row.Coefficients[j].Value, 
-                        System.Globalization.NumberStyles.Any, 
-                        System.Globalization.CultureInfo.InvariantCulture, 
-                        out constraintCoeffs[i, j]))
+                    if (!Fraction.TryParse(row.Coefficients[j].Value, out constraintCoeffs[i, j]))
                     {
                         errorMessages.Add($"Невірний коефіцієнт в умові {i + 1}: x{SubscriptConverter.ToSubscript(j + 1)}");
                     }
                 }
 
-                if (!double.TryParse(
-                    row.RhsValue, 
-                    System.Globalization.NumberStyles.Any, 
-                    System.Globalization.CultureInfo.InvariantCulture, 
-                    out rgsValues[i]))
+                if (!Fraction.TryParse(row.RhsValue, out rgsValues[i]))
                 {
                     errorMessages.Add($"Невірне праве значення в умові {i + 1}");
                 }

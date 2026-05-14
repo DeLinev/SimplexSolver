@@ -2,9 +2,9 @@
 {
     public class LinearProgrammingProblem
     {
-        public double[] ObjectiveCoefficients { get; init; }
-        public double[,] ConstraintCoefficients { get; init; }
-        public double[] RightHandSideValues { get; init; }
+        public Fraction[] ObjectiveCoefficients { get; init; }
+        public Fraction[,] ConstraintCoefficients { get; init; }
+        public Fraction[] RightHandSideValues { get; init; }
         public OptimizationType OptimizationType { get; init; }
         public ConstraintSign[] ConstraintSigns { get; init; }
 
