@@ -29,6 +29,7 @@ namespace SimplexMethodApp.Services
                 {
                     table.EnteringColumnIndex = null;
                     table.LeavingRowIndex = null;
+                    table.QValues = new double?[table.Plan.Length];
 
                     if (HasArtificialVariablesInBasis(table))
                     {
@@ -97,6 +98,7 @@ namespace SimplexMethodApp.Services
                 {
                     table.EnteringColumnIndex = enteringCol;
                     table.LeavingRowIndex = null;
+                    table.QValues = new double?[table.Plan.Length];
 
                     Steps.Add(new SimplexStep
                     {
@@ -309,10 +311,6 @@ namespace SimplexMethodApp.Services
             simplexTable.Variables.AddRange(slackVariables);
             simplexTable.Variables.AddRange(artifVariables);
 
-            string title = artifCols > 0
-                ? "Приведення до стандартної форми та додавання штучних змінних"
-                : "Приведення до стандартної форми";
-
             string description = artifCols > 0
                 ? "Нерівності перетворено на рівності за допомогою балансуючих змінних. " +
                   "Для обмежень типу '≥' та '=' додано штучні змінні з коефіцієнтом " +
@@ -322,7 +320,7 @@ namespace SimplexMethodApp.Services
             Steps.Add(new SimplexStep
             {
                 Type = StepType.StandardFormConversion,
-                Title = title,
+                Title = "Підготовка задачі до симплекс-методу",
                 Description = description,
                 Equations = BuildStandardFormEquations(simplexTable, problem.OptimizationType)
             });
