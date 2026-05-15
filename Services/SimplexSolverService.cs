@@ -203,13 +203,18 @@ namespace SimplexMethodApp.Services
 
             int totalCols = origCols + slackCols + artifCols;
 
+            var matrix = new Fraction[n, totalCols];
+            for (int i = 0; i < n; i++)
+                for (int j = 0; j < totalCols; j++)
+                    matrix[i, j] = Fraction.Zero;
+
             var simplexTable = new SimplexTable
             {
                 Variables = new List<SimplexVariable>(),
                 BasicVariables = new List<SimplexVariable>(),
                 Cb = new MValue[n],
                 Plan = new Fraction[n],
-                Matrix = new Fraction[n, totalCols],
+                Matrix = matrix,
                 ObjectiveFunctionValue = MValue.Zero,
                 ReducedCosts = new MValue[totalCols],
                 QValues = new Fraction?[n]

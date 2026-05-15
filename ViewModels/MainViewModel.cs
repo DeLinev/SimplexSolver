@@ -112,9 +112,14 @@ namespace SimplexMethodApp.ViewModels
                 ValidationErrors.Clear();
                 OnPropertyChanged(nameof(HasValidationErrors));
 
-                var result = await Task.Run(() => _solver.Solve(problem, token), token);
+                var (result, stepViewModels) = await Task.Run(() =>
+                {
+                    var r = _solver.Solve(problem, token);
+                    var steps = r.Steps.Select(SolutionStepBuilder.Build).ToList();
+                    return (r, steps);
+                }, token);
 
-                PopulateSolution(result);
+                PopulateSolution(result, stepViewModels);
                 IsSolutionVisible = true;
             }
             catch (OperationCanceledException)
@@ -133,21 +138,20 @@ namespace SimplexMethodApp.ViewModels
             }
         }
 
-        private void PopulateSolution(SimplexSolution result)
+        private void PopulateSolution(SimplexSolution result, List<SolutionStepViewModel> stepViewModels)
         {
             SolutionSteps.Clear();
-
-            foreach (var step in result.Steps)
-                SolutionSteps.Add(SolutionStepBuilder.Build(step));
+            foreach (var step in stepViewModels)
+                SolutionSteps.Add(step);
 
             switch (result.Status)
             {
                 case SolutionStatus.Optimal:
                 case SolutionStatus.AlternateOptimum:
                     SolutionStatusColor = Color.FromArgb("#10B981");
-                    OptimalValue = $"F[{SelectedOptimizationOption}] = {result.OptimalValue:G6}";
+                    OptimalValue = $"F[{SelectedOptimizationOption}] = {FormatFractionValue(result.OptimalValue!.Value)}";
                     OptimalVariables = string.Join(",  ",
-                        result.VariableValues.Select(kv => $"{kv.Key} = {kv.Value:G6}"));
+                        result.VariableValues.Select(kv => $"{kv.Key} = {FormatFractionValue(kv.Value)}"));
                     break;
 
                 case SolutionStatus.Infeasible:
@@ -163,7 +167,6 @@ namespace SimplexMethodApp.ViewModels
                     break;
             }
         }
-
 
         private bool CanSolve() => !IsBusy && !HasErrors;
 
@@ -343,6 +346,15 @@ namespace SimplexMethodApp.ViewModels
             if (int.TryParse(SelectedConstraintOption, out int selected))
                 return selected;
             return 2;
+        }
+
+        private static string FormatFractionValue(Fraction f)
+        {
+            if (f.Denominator == 1)
+                return f.Numerator.ToString();
+
+            double approx = f.ToDouble();
+            return $"{f} ≈ {approx:G6}";
         }
 
         partial void OnSelectedVariableOptionChanged(string value)

@@ -544,14 +544,14 @@
                                     StrokeShape="RoundRectangle 5"
                                     HorizontalOptions="Start">
                                 <Label Text="xᵢ"
-                                       FontSize="12"
+                                       FontSize="14"
                                        FontAttributes="Bold"
                                        TextColor="{StaticResource Primary}"
                                        HorizontalOptions="Center"
                                        VerticalOptions="Fill" />
                             </Border>
                             <Label Text="Оригінальні змінні задачі"
-                                   FontSize="13"
+                                   FontSize="14"
                                    TextColor="{AppThemeBinding Light={StaticResource TextPrimary},
                                                                Dark={StaticResource TextPrimaryDark}}"
                                    VerticalOptions="Center" />
@@ -567,19 +567,19 @@
                                     StrokeShape="RoundRectangle 5"
                                     HorizontalOptions="Start">
                                 <Label Text="sᵢ"
-                                           FontSize="12"
-                                           FontAttributes="Bold"
-                                           TextColor="#10B981"
-                                           HorizontalOptions="Center"
-                                           VerticalOptions="Fill" />
+                                       FontSize="14"
+                                       FontAttributes="Bold"
+                                       TextColor="#10B981"
+                                       HorizontalOptions="Center"
+                                       VerticalOptions="Fill" />
                             </Border>
                             <VerticalStackLayout Spacing="1" VerticalOptions="Center">
                                 <Label Text="Балансуючі змінні"
-                                       FontSize="13"
+                                       FontSize="14"
                                        TextColor="{AppThemeBinding Light={StaticResource TextPrimary},
                                                                    Dark={StaticResource TextPrimaryDark}}" />
                                 <Label Text="Додаються для перетворення нерівностей у рівності (≤ → +sᵢ, ≥ → −sᵢ)"
-                                       FontSize="11"
+                                       FontSize="13"
                                        TextColor="{StaticResource TextSecondary}" />
                             </VerticalStackLayout>
                         </HorizontalStackLayout>
@@ -595,7 +595,7 @@
                                     HorizontalOptions="Start"
                                     >
                                 <Label Text="aᵢ"
-                                       FontSize="12"
+                                       FontSize="14"
                                        FontAttributes="Bold"
                                        TextColor="{StaticResource Danger}"
                                        HorizontalOptions="Center"
@@ -603,11 +603,11 @@
                             </Border>
                             <VerticalStackLayout Spacing="1" VerticalOptions="Center">
                                 <Label Text="Штучні змінні (M-метод)"
-                                       FontSize="13"
+                                       FontSize="14"
                                        TextColor="{AppThemeBinding Light={StaticResource TextPrimary},
                                                                    Dark={StaticResource TextPrimaryDark}}" />
                                 <Label Text="Додаються для обмежень ≥ та =. Мають великий штрафний коефіцієнт ±M у цільовій функції"
-                                       FontSize="11"
+                                       FontSize="13"
                                        TextColor="{StaticResource TextSecondary}" />
                             </VerticalStackLayout>
                         </HorizontalStackLayout>
